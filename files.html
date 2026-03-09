@@ -19,11 +19,12 @@
       --good: #388e3c;
       --input-bg: #ffffff;
       --input-text: #212121;
+      --surface-shadow-fill: rgba(33, 33, 33, 0.14);
       --rope-shadow-width: 1px;
       --rope-shadow-offset: 4px;
       --rope-shadow-diagonal: 5px;
       --shell-gap: 12px;
-      --rope-gradient: repeating-linear-gradient(
+      --rainbow-shadow-gradient: repeating-linear-gradient(
         135deg,
         #ff4d4d 0 4px,
         #ff9800 4px 8px,
@@ -50,6 +51,7 @@
         --good: #81c784;
         --input-bg: #1e1e1e;
         --input-text: #e8e8e8;
+        --surface-shadow-fill: rgba(0, 0, 0, 0.45);
       }
 
       :root:not([data-theme="light"]) body {
@@ -85,6 +87,16 @@
       --good: #81c784;
       --input-bg: #1e1e1e;
       --input-text: #e8e8e8;
+      --surface-shadow-fill: rgba(0, 0, 0, 0.45);
+    }
+
+    :root,
+    :root[data-style-theme="default"] {
+      --surface-accent-fill: var(--surface-shadow-fill);
+    }
+
+    :root[data-style-theme="rainbow-shadow"] {
+      --surface-accent-fill: var(--rainbow-shadow-gradient);
     }
 
     [data-theme="dark"] body {
@@ -129,7 +141,7 @@
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      background: var(--rope-gradient);
+      background: var(--surface-accent-fill);
       transform: translate(var(--rope-shadow-offset), var(--rope-shadow-offset));
       clip-path: polygon(
         100% 0,
@@ -144,6 +156,38 @@
       pointer-events: none;
       z-index: -1;
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .theme-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .theme-select {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .theme-select select {
+      min-width: 168px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 6px 18px -16px var(--shadow);
+    }
+    .theme-select select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
     }
     .shell {
       width: calc(100vw - (var(--shell-gap) * 2));
@@ -940,9 +984,18 @@
 
     <section class="panel alt roots-panel">
       <div class="head">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
           <h1 style="margin:0;">File Browser</h1>
-          <button id="themeToggleBtn" type="button" class="secondary" title="Toggle dark mode" style="padding:8px 12px; font-size:16px; border-radius:8px;">🌙</button>
+          <div class="theme-controls">
+            <label class="theme-select" for="styleThemeSelect">
+              <span>Theme</span>
+              <select id="styleThemeSelect">
+                <option value="default">Default</option>
+                <option value="rainbow-shadow">Rainbow shadow</option>
+              </select>
+            </label>
+            <button id="themeToggleBtn" type="button" class="secondary" title="Toggle dark mode" style="padding:8px 12px; font-size:16px; border-radius:8px;">🌙</button>
+          </div>
         </div>
         <p class="sub">Read-only browser for OpenClaw state, workspace files, sessions, and uploads.</p>
         <div class="toolbar">
@@ -1055,6 +1108,7 @@
   <script>
     // Initialize theme
     const savedTheme = localStorage.getItem("theme") || "auto";
+    const savedStyleTheme = localStorage.getItem("styleTheme") || "default";
     function applyTheme(theme) {
       if (theme === "auto") {
         document.documentElement.removeAttribute("data-theme");
@@ -1065,6 +1119,15 @@
       updateThemeToggleButton();
     }
 
+    function applyStyleTheme(themeName) {
+      document.documentElement.setAttribute("data-style-theme", themeName);
+      localStorage.setItem("styleTheme", themeName);
+      const styleThemeSelect = document.getElementById("styleThemeSelect");
+      if (styleThemeSelect && styleThemeSelect.value !== themeName) {
+        styleThemeSelect.value = themeName;
+      }
+    }
+
     function updateThemeToggleButton() {
       const themeToggleBtn = document.getElementById("themeToggleBtn");
       const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
@@ -1073,6 +1136,7 @@
     }
 
     applyTheme(savedTheme);
+    applyStyleTheme(savedStyleTheme);
 
     const state = {
       roots: [],
@@ -1091,6 +1155,7 @@
     const treeTitleEl = document.getElementById("treeTitle");
     const treeStatusEl = document.getElementById("treeStatus");
     const mobileNavEl = document.getElementById("mobileNav");
+    const styleThemeSelectEl = document.getElementById("styleThemeSelect");
     const floatingImageWindowEl = document.getElementById("floatingImageWindow");
     const floatingWindowHeadEl = document.getElementById("floatingWindowHead");
     const floatingWindowToggleBtn = document.getElementById("floatingWindowToggleBtn");
@@ -1598,6 +1663,9 @@
       const current = localStorage.getItem("theme") || "auto";
       let next = current === "light" ? "dark" : current === "dark" ? "auto" : "light";
       applyTheme(next);
+    });
+    styleThemeSelectEl.addEventListener("change", event => {
+      applyStyleTheme(event.target.value);
     });
 
     // Listen for system theme changes when in auto mode
