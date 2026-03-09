@@ -22,6 +22,8 @@
       --rope-shadow-width: 1px;
       --rope-shadow-offset: 4px;
       --rope-shadow-diagonal: 5px;
+      --shell-gap: 12px;
+      --reserved-window-space: clamp(360px, 31vw, 540px);
       --rope-gradient: repeating-linear-gradient(
         135deg,
         #ff4d4d 0 4px,
@@ -145,11 +147,10 @@
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .shell {
-      width: min(1460px, calc(100vw - 24px));
-      margin: 12px auto;
+      margin: var(--shell-gap) calc(var(--reserved-window-space) + var(--shell-gap)) var(--shell-gap) var(--shell-gap);
       display: grid;
       gap: 12px;
-      grid-template-columns: 300px minmax(320px, 1fr) minmax(380px, 1.2fr);
+      grid-template-columns: minmax(280px, 0.9fr) minmax(760px, 2.1fr);
     }
     .mobile-nav {
       display: none;
@@ -500,12 +501,165 @@
       padding: 18px;
       overflow: auto;
       flex: 1;
+      min-height: 0;
     }
     .preview-block {
       display: flex;
       flex-direction: column;
       min-height: 0;
       flex: 1;
+    }
+    .floating-preview-window {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: clamp(360px, 31vw, 540px);
+      min-width: 320px;
+      min-height: 320px;
+      height: min(84dvh, 920px);
+      z-index: 30;
+      box-shadow: 0 20px 48px -28px var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .floating-preview-window.is-interacting,
+    .floating-preview-window.is-interacting::after {
+      transition: none;
+    }
+    .floating-preview-window.is-minimized {
+      height: auto !important;
+      min-height: 0;
+      overflow: visible;
+    }
+    .floating-window-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--line);
+      cursor: move;
+      user-select: none;
+      touch-action: none;
+    }
+    .floating-window-title {
+      min-width: 0;
+      flex: 1;
+    }
+    .floating-window-title .sub {
+      margin-top: 6px;
+    }
+    .floating-window-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .window-toggle {
+      min-width: 44px;
+      padding: 8px 12px;
+    }
+    .floating-window-content {
+      display: grid;
+      grid-template-rows: minmax(170px, 0.92fr) minmax(250px, 1.35fr);
+      min-height: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+    .floating-preview-window.is-minimized .floating-window-content {
+      display: none;
+    }
+    .floating-window-section {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+    }
+    .floating-window-section:first-child {
+      border-top: none;
+    }
+    .floating-window-section-head {
+      padding: 12px 18px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .floating-preview-window .list,
+    .floating-preview-window .tree,
+    .floating-preview-window .preview {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .floating-preview-window .list {
+      padding-top: 0;
+      padding-bottom: 16px;
+    }
+    .floating-preview-window .preview {
+      padding-top: 0;
+      padding-bottom: 16px;
+    }
+    .resize-handle {
+      position: absolute;
+      z-index: 2;
+      background: transparent;
+    }
+    .resize-handle[data-resize="n"],
+    .resize-handle[data-resize="s"] {
+      left: 12px;
+      right: 12px;
+      height: 12px;
+    }
+    .resize-handle[data-resize="n"] {
+      top: -6px;
+      cursor: ns-resize;
+    }
+    .resize-handle[data-resize="s"] {
+      bottom: -6px;
+      cursor: ns-resize;
+    }
+    .resize-handle[data-resize="e"],
+    .resize-handle[data-resize="w"] {
+      top: 12px;
+      bottom: 12px;
+      width: 12px;
+    }
+    .resize-handle[data-resize="e"] {
+      right: -6px;
+      cursor: ew-resize;
+    }
+    .resize-handle[data-resize="w"] {
+      left: -6px;
+      cursor: ew-resize;
+    }
+    .resize-handle[data-resize="ne"],
+    .resize-handle[data-resize="nw"],
+    .resize-handle[data-resize="se"],
+    .resize-handle[data-resize="sw"] {
+      width: 18px;
+      height: 18px;
+    }
+    .resize-handle[data-resize="ne"] {
+      top: -6px;
+      right: -6px;
+      cursor: nesw-resize;
+    }
+    .resize-handle[data-resize="nw"] {
+      top: -6px;
+      left: -6px;
+      cursor: nwse-resize;
+    }
+    .resize-handle[data-resize="se"] {
+      right: -6px;
+      bottom: -6px;
+      cursor: nwse-resize;
+    }
+    .resize-handle[data-resize="sw"] {
+      left: -6px;
+      bottom: -6px;
+      cursor: nesw-resize;
     }
     .preview-meta {
       color: var(--muted);
@@ -663,15 +817,24 @@
     #editStatus.err { color: #b83232; }
 
     @media (max-width: 1180px) {
-      .shell { grid-template-columns: 280px 1fr; }
-      .panel.preview-panel { grid-column: 1 / -1; min-height: 52dvh; }
+      :root {
+        --reserved-window-space: clamp(320px, 34vw, 460px);
+      }
+      .shell {
+        grid-template-columns: minmax(250px, 0.82fr) minmax(0, 1.7fr);
+      }
+      .floating-preview-window {
+        width: clamp(320px, 34vw, 460px);
+      }
     }
     @media (max-width: 780px) {
       body { padding-bottom: 18px; }
+      :root {
+        --reserved-window-space: 0px;
+      }
       .shell {
         grid-template-columns: 1fr;
-        width: min(100vw - 16px, 760px);
-        margin: 8px auto;
+        margin: 8px;
       }
       .mobile-nav {
         display: grid;
@@ -683,6 +846,30 @@
       .panel {
         min-height: auto;
         border-radius: 16px;
+      }
+      .floating-preview-window {
+        position: static;
+        top: auto;
+        right: auto;
+        left: auto !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 0;
+        min-height: auto;
+        margin: 0 8px 8px;
+        z-index: auto;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      .floating-window-head {
+        cursor: default;
+        touch-action: auto;
+      }
+      .floating-window-content {
+        grid-template-rows: auto minmax(260px, 1fr);
+      }
+      .resize-handle {
+        display: none;
       }
       .head {
         padding: 16px 16px 12px;
@@ -793,23 +980,39 @@
       </div>
     </section>
 
-    <section class="panel preview-panel">
-      <div class="head">
+  </main>
+
+  <section class="panel preview-panel floating-preview-window" id="floatingPreviewWindow">
+    <div class="floating-window-head" id="floatingWindowHead">
+      <div class="floating-window-title">
         <h2>Recent changes and preview</h2>
         <p class="sub">Newest files first. Click any file to open a preview.</p>
       </div>
-      <div class="panel-body">
-        <div id="recentBlock">
-          <div id="recent" class="list"></div>
-        </div>
-        <div id="previewBlock" class="preview-block">
-          <div id="preview" class="preview">
-            <div class="empty">Choose a file from the directory listing or the recent changes feed.</div>
-          </div>
+      <div class="floating-window-actions">
+        <button type="button" class="secondary window-toggle" id="floatingWindowToggleBtn" title="Collapse window">_</button>
+      </div>
+    </div>
+    <div class="panel-body floating-window-content" id="floatingWindowContent">
+      <div id="recentBlock" class="floating-window-section">
+        <div class="floating-window-section-head">Recent</div>
+        <div id="recent" class="list"></div>
+      </div>
+      <div id="previewBlock" class="preview-block floating-window-section">
+        <div class="floating-window-section-head">Preview</div>
+        <div id="preview" class="preview">
+          <div class="empty">Choose a file from the directory listing or the recent changes feed.</div>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+    <div class="resize-handle" data-resize="n"></div>
+    <div class="resize-handle" data-resize="e"></div>
+    <div class="resize-handle" data-resize="s"></div>
+    <div class="resize-handle" data-resize="w"></div>
+    <div class="resize-handle" data-resize="ne"></div>
+    <div class="resize-handle" data-resize="nw"></div>
+    <div class="resize-handle" data-resize="se"></div>
+    <div class="resize-handle" data-resize="sw"></div>
+  </section>
 
   <!-- New .md file modal -->
   <div id="mdModal" class="modal-overlay" style="display:none">
@@ -871,6 +1074,144 @@
     const treeTitleEl = document.getElementById("treeTitle");
     const treeStatusEl = document.getElementById("treeStatus");
     const mobileNavEl = document.getElementById("mobileNav");
+    const floatingPreviewWindowEl = document.getElementById("floatingPreviewWindow");
+    const floatingWindowHeadEl = document.getElementById("floatingWindowHead");
+    const floatingWindowToggleBtn = document.getElementById("floatingWindowToggleBtn");
+    const mobileLayoutQuery = window.matchMedia("(max-width: 780px)");
+    const floatingWindowState = {
+      minimized: false,
+      rect: null,
+      interaction: null,
+    };
+
+    function isMobileLayout() {
+      return mobileLayoutQuery.matches;
+    }
+
+    function clampWindowRect(rect) {
+      const margin = 12;
+      const headerHeight = floatingWindowHeadEl.offsetHeight || 62;
+      const minWidth = 320;
+      const minHeight = 320;
+      const maxWidth = Math.max(minWidth, window.innerWidth - margin * 2);
+      const maxHeight = Math.max(minHeight, window.innerHeight - margin * 2);
+      const width = Math.min(Math.max(rect.width, minWidth), maxWidth);
+      const height = Math.min(Math.max(rect.height, minHeight), maxHeight);
+      const maxTop = Math.max(margin, window.innerHeight - (floatingWindowState.minimized ? headerHeight : height) - margin);
+      return {
+        width,
+        height,
+        left: Math.min(Math.max(rect.left, margin), window.innerWidth - width - margin),
+        top: Math.min(Math.max(rect.top, margin), maxTop),
+      };
+    }
+
+    function updateReservedWindowSpace() {
+      if (isMobileLayout() || floatingWindowState.minimized || !floatingWindowState.rect) {
+        document.documentElement.style.setProperty("--reserved-window-space", "0px");
+        return;
+      }
+      const rightGap = window.innerWidth - (floatingWindowState.rect.left + floatingWindowState.rect.width);
+      const isDockedRight = rightGap <= 24;
+      if (!isDockedRight) {
+        document.documentElement.style.setProperty("--reserved-window-space", "0px");
+        return;
+      }
+      document.documentElement.style.setProperty("--reserved-window-space", `${Math.round(floatingWindowState.rect.width + 24)}px`);
+    }
+
+    function applyFloatingWindowRect(rect) {
+      if (isMobileLayout()) {
+        floatingPreviewWindowEl.style.removeProperty("right");
+        floatingPreviewWindowEl.style.removeProperty("left");
+        floatingPreviewWindowEl.style.removeProperty("top");
+        floatingPreviewWindowEl.style.removeProperty("width");
+        floatingPreviewWindowEl.style.removeProperty("height");
+        updateReservedWindowSpace();
+        return;
+      }
+      floatingWindowState.rect = clampWindowRect(rect);
+      floatingPreviewWindowEl.style.right = "auto";
+      floatingPreviewWindowEl.style.left = `${floatingWindowState.rect.left}px`;
+      floatingPreviewWindowEl.style.top = `${floatingWindowState.rect.top}px`;
+      floatingPreviewWindowEl.style.width = `${floatingWindowState.rect.width}px`;
+      floatingPreviewWindowEl.style.height = `${floatingWindowState.rect.height}px`;
+      updateReservedWindowSpace();
+    }
+
+    function initializeFloatingWindow() {
+      if (isMobileLayout()) {
+        updateReservedWindowSpace();
+        return;
+      }
+      const width = Math.min(Math.max(window.innerWidth * 0.31, 360), 540);
+      const height = Math.min(window.innerHeight * 0.84, 920);
+      applyFloatingWindowRect({
+        left: window.innerWidth - width - 12,
+        top: 12,
+        width,
+        height,
+      });
+    }
+
+    function setFloatingWindowMinimized(minimized) {
+      floatingWindowState.minimized = minimized;
+      floatingPreviewWindowEl.classList.toggle("is-minimized", minimized);
+      floatingWindowToggleBtn.textContent = minimized ? "+" : "_";
+      floatingWindowToggleBtn.title = minimized ? "Expand window" : "Collapse window";
+      updateReservedWindowSpace();
+    }
+
+    function startWindowInteraction(event, mode, edge = "") {
+      if (isMobileLayout()) return;
+      if (mode === "drag" && event.target.closest("button")) return;
+      if (event.button !== 0) return;
+      if (!floatingWindowState.rect) initializeFloatingWindow();
+      floatingWindowState.interaction = {
+        mode,
+        edge,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startRect: { ...floatingWindowState.rect },
+      };
+      floatingPreviewWindowEl.classList.add("is-interacting");
+      event.preventDefault();
+    }
+
+    function stopWindowInteraction() {
+      floatingWindowState.interaction = null;
+      floatingPreviewWindowEl.classList.remove("is-interacting");
+    }
+
+    function handleWindowPointerMove(event) {
+      const action = floatingWindowState.interaction;
+      if (!action || event.pointerId !== action.pointerId) return;
+      const dx = event.clientX - action.startX;
+      const dy = event.clientY - action.startY;
+      if (action.mode === "drag") {
+        applyFloatingWindowRect({
+          left: action.startRect.left + dx,
+          top: action.startRect.top + dy,
+          width: action.startRect.width,
+          height: action.startRect.height,
+        });
+        return;
+      }
+
+      const nextRect = { ...action.startRect };
+      if (action.edge.includes("e")) nextRect.width = action.startRect.width + dx;
+      if (action.edge.includes("s")) nextRect.height = action.startRect.height + dy;
+      if (action.edge.includes("w")) {
+        nextRect.left = action.startRect.left + dx;
+        nextRect.width = action.startRect.width - dx;
+      }
+      if (action.edge.includes("n")) {
+        nextRect.top = action.startRect.top + dy;
+        nextRect.height = action.startRect.height - dy;
+      }
+      applyFloatingWindowRect(nextRect);
+    }
 
     function setMobilePanel(panel) {
       state.mobilePanel = panel;
@@ -1198,6 +1539,35 @@
     mobileNavEl.querySelectorAll("button").forEach(button => {
       button.addEventListener("click", () => setMobilePanel(button.dataset.panel));
     });
+    floatingWindowHeadEl.addEventListener("pointerdown", event => startWindowInteraction(event, "drag"));
+    floatingPreviewWindowEl.querySelectorAll(".resize-handle").forEach(handle => {
+      handle.addEventListener("pointerdown", event => startWindowInteraction(event, "resize", handle.dataset.resize));
+    });
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", stopWindowInteraction);
+    window.addEventListener("pointercancel", stopWindowInteraction);
+    floatingWindowToggleBtn.addEventListener("click", () => setFloatingWindowMinimized(!floatingWindowState.minimized));
+    window.addEventListener("resize", () => {
+      if (isMobileLayout()) {
+        updateReservedWindowSpace();
+        return;
+      }
+      if (!floatingWindowState.rect) {
+        initializeFloatingWindow();
+        return;
+      }
+      applyFloatingWindowRect(floatingWindowState.rect);
+    });
+    mobileLayoutQuery.addEventListener("change", () => {
+      if (isMobileLayout()) {
+        stopWindowInteraction();
+      } else if (!floatingWindowState.rect) {
+        initializeFloatingWindow();
+      } else {
+        applyFloatingWindowRect(floatingWindowState.rect);
+      }
+      updateReservedWindowSpace();
+    });
     document.getElementById("refreshAllBtn").addEventListener("click", refreshAll);
 
     document.getElementById("themeToggleBtn").addEventListener("click", () => {
@@ -1327,6 +1697,7 @@
       mdSaveBtn.disabled = false;
     });
 
+    initializeFloatingWindow();
     refreshAll();
     setInterval(loadRecent, 20000);
   </script>
