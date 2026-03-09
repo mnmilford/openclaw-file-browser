@@ -562,7 +562,16 @@
     }
     .window-toggle {
       min-width: 44px;
+      min-height: 40px;
       padding: 8px 12px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: none;
     }
     .floating-window-content {
       display: flex;
@@ -1002,8 +1011,8 @@
         <p class="sub" id="floatingWindowSubtitle">Large view for image files.</p>
       </div>
       <div class="floating-window-actions">
-        <button type="button" class="secondary window-toggle" id="floatingWindowCloseBtn" title="Close window">✕</button>
         <button type="button" class="secondary window-toggle" id="floatingWindowToggleBtn" title="Collapse window">_</button>
+        <button type="button" class="secondary window-toggle" id="floatingWindowCloseBtn" title="Close window">×</button>
       </div>
     </div>
     <div class="panel-body floating-window-content" id="floatingWindowContent">
