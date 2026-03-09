@@ -19,17 +19,18 @@
       --good: #388e3c;
       --input-bg: #ffffff;
       --input-text: #212121;
-      --rope-shadow-width: 12px;
-      --rope-shadow-offset: 8px;
+      --rope-shadow-width: 5px;
+      --rope-shadow-offset: 4px;
+      --rope-shadow-diagonal: 9px;
       --rope-gradient: repeating-linear-gradient(
         135deg,
-        #ff4d4d 0 10px,
-        #ff9800 10px 20px,
-        #ffe14d 20px 30px,
-        #2fd05b 30px 40px,
-        #12dfff 40px 50px,
-        #2f6cff 50px 60px,
-        #ad3cff 60px 70px
+        #ff4d4d 0 4px,
+        #ff9800 4px 8px,
+        #ffe14d 8px 12px,
+        #2fd05b 12px 16px,
+        #12dfff 16px 20px,
+        #2f6cff 20px 24px,
+        #ad3cff 24px 28px
       );
     }
 
@@ -134,7 +135,8 @@
         100% 100%,
         0 100%,
         0 calc(100% - var(--rope-shadow-width)),
-        calc(100% - var(--rope-shadow-width)) calc(100% - var(--rope-shadow-width)),
+        calc(100% - var(--rope-shadow-diagonal)) calc(100% - var(--rope-shadow-width)),
+        calc(100% - var(--rope-shadow-width)) calc(100% - var(--rope-shadow-diagonal)),
         calc(100% - var(--rope-shadow-width)) 0
       );
       filter: drop-shadow(0 8px 16px var(--shadow));
@@ -155,8 +157,9 @@
       padding: 4px 0 0;
     }
     .panel {
-      --rope-shadow-width: 16px;
-      --rope-shadow-offset: 10px;
+      --rope-shadow-width: 6px;
+      --rope-shadow-offset: 4px;
+      --rope-shadow-diagonal: 11px;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -246,8 +249,9 @@
       align-items: center;
     }
     button, .btn {
-      --rope-shadow-width: 10px;
-      --rope-shadow-offset: 6px;
+      --rope-shadow-width: 5px;
+      --rope-shadow-offset: 4px;
+      --rope-shadow-diagonal: 9px;
       border: 1px solid var(--accent);
       border-radius: 6px;
       background: var(--accent);
