@@ -19,6 +19,18 @@
       --good: #388e3c;
       --input-bg: #ffffff;
       --input-text: #212121;
+      --rope-shadow-width: 12px;
+      --rope-shadow-offset: 8px;
+      --rope-gradient: repeating-linear-gradient(
+        135deg,
+        #ff4d4d 0 10px,
+        #ff9800 10px 20px,
+        #ffe14d 20px 30px,
+        #2fd05b 30px 40px,
+        #12dfff 40px 50px,
+        #2f6cff 50px 60px,
+        #ad3cff 60px 70px
+      );
     }
 
     @media (prefers-color-scheme: dark) {
@@ -102,6 +114,34 @@
     }
     a { color: inherit; }
     * { --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+    .panel,
+    button,
+    .btn {
+      position: relative;
+      isolation: isolate;
+    }
+    .panel::after,
+    button::after,
+    .btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: var(--rope-gradient);
+      transform: translate(var(--rope-shadow-offset), var(--rope-shadow-offset));
+      clip-path: polygon(
+        100% 0,
+        100% 100%,
+        0 100%,
+        0 calc(100% - var(--rope-shadow-width)),
+        calc(100% - var(--rope-shadow-width)) calc(100% - var(--rope-shadow-width)),
+        calc(100% - var(--rope-shadow-width)) 0
+      );
+      filter: drop-shadow(0 8px 16px var(--shadow));
+      pointer-events: none;
+      z-index: -1;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
     .shell {
       width: min(1460px, calc(100vw - 24px));
       margin: 12px auto;
@@ -115,19 +155,13 @@
       padding: 4px 0 0;
     }
     .panel {
+      --rope-shadow-width: 16px;
+      --rope-shadow-offset: 10px;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
-      box-shadow: 
-        1px 1px 0px #ff4444,
-        2px 2px 0px #ff9900,
-        3px 3px 0px #ffff00,
-        4px 4px 0px #00dd00,
-        5px 5px 0px #00ffff,
-        6px 6px 0px #0066ff,
-        7px 7px 0px #9900ff,
-        0 2px 8px var(--shadow);
-      overflow: hidden;
+      box-shadow: 0 12px 28px -18px var(--shadow);
+      overflow: visible;
       min-height: 84dvh;
       display: flex;
       flex-direction: column;
@@ -155,15 +189,7 @@
     .panel.alt { 
       background: var(--panel-2);
       border: 1px solid var(--line);
-      box-shadow: 
-        1px 1px 0px #ff4444,
-        2px 2px 0px #ff9900,
-        3px 3px 0px #ffff00,
-        4px 4px 0px #00dd00,
-        5px 5px 0px #00ffff,
-        6px 6px 0px #0066ff,
-        7px 7px 0px #9900ff,
-        0 2px 8px var(--shadow);
+      box-shadow: 0 12px 28px -18px var(--shadow);
     }
 
     [data-theme="dark"] .panel.alt {
@@ -220,6 +246,8 @@
       align-items: center;
     }
     button, .btn {
+      --rope-shadow-width: 10px;
+      --rope-shadow-offset: 6px;
       border: 1px solid var(--accent);
       border-radius: 6px;
       background: var(--accent);
@@ -231,36 +259,29 @@
       cursor: pointer;
       text-decoration: none;
       transition: var(--transition);
-      position: relative;
-      box-shadow: 
-        1px 1px 0px #ff4444,
-        2px 2px 0px #ff9900,
-        3px 3px 0px #ffff00,
-        4px 4px 0px #00dd00,
-        5px 5px 0px #00ffff,
-        6px 6px 0px #0066ff,
-        7px 7px 0px #9900ff;
+      box-shadow: 0 8px 18px -16px var(--shadow);
     }
 
     button:hover:not(:disabled), .btn:hover:not(:disabled) {
-      opacity: 0.85;
-      box-shadow: 
-        1px 1px 0px #ff4444,
-        2px 2px 0px #ff9900,
-        3px 3px 0px #ffff00,
-        4px 4px 0px #00dd00,
-        5px 5px 0px #00ffff,
-        6px 6px 0px #0066ff,
-        7px 7px 0px #9900ff,
-        8px 8px 0px #ff4444;
+      opacity: 0.92;
+      transform: translate(-1px, -1px);
+      box-shadow: 0 10px 20px -16px var(--shadow);
     }
 
     button:active:not(:disabled), .btn:active:not(:disabled) {
-      opacity: 0.7;
-      box-shadow: 
-        1px 1px 0px #ff4444,
-        2px 2px 0px #ff9900,
-        3px 3px 0px #ffff00;
+      opacity: 1;
+      transform: translate(2px, 2px);
+      box-shadow: 0 6px 14px -16px var(--shadow);
+    }
+
+    button:hover:not(:disabled)::after, .btn:hover:not(:disabled)::after {
+      transform: translate(calc(var(--rope-shadow-offset) + 1px), calc(var(--rope-shadow-offset) + 1px));
+      filter: drop-shadow(0 10px 18px var(--shadow));
+    }
+
+    button:active:not(:disabled)::after, .btn:active:not(:disabled)::after {
+      transform: translate(calc(var(--rope-shadow-offset) - 3px), calc(var(--rope-shadow-offset) - 3px));
+      filter: drop-shadow(0 6px 12px var(--shadow));
     }
 
     button.secondary, .btn.secondary {
