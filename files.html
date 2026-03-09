@@ -19,9 +19,9 @@
       --good: #388e3c;
       --input-bg: #ffffff;
       --input-text: #212121;
-      --rope-shadow-width: 2px;
+      --rope-shadow-width: 1px;
       --rope-shadow-offset: 4px;
-      --rope-shadow-diagonal: 6px;
+      --rope-shadow-diagonal: 5px;
       --rope-gradient: repeating-linear-gradient(
         135deg,
         #ff4d4d 0 4px,
@@ -155,11 +155,17 @@
       display: none;
       gap: 8px;
       padding: 4px 0 0;
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+      border-radius: 10px;
+      box-shadow: 0 10px 24px -20px var(--shadow);
+      backdrop-filter: blur(9px);
+      -webkit-backdrop-filter: blur(9px);
     }
     .panel {
-      --rope-shadow-width: 3px;
+      --rope-shadow-width: 1px;
       --rope-shadow-offset: 4px;
-      --rope-shadow-diagonal: 7px;
+      --rope-shadow-diagonal: 6px;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -249,9 +255,9 @@
       align-items: center;
     }
     button, .btn {
-      --rope-shadow-width: 2px;
+      --rope-shadow-width: 1px;
       --rope-shadow-offset: 4px;
-      --rope-shadow-diagonal: 6px;
+      --rope-shadow-diagonal: 5px;
       border: 1px solid var(--accent);
       border-radius: 6px;
       background: var(--accent);
