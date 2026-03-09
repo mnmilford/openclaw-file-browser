@@ -24,6 +24,9 @@
       --rope-shadow-offset: 4px;
       --rope-shadow-diagonal: 5px;
       --shell-gap: 12px;
+      --lil-mike-accent-fill: linear-gradient(135deg, rgba(22, 163, 196, 0.96), rgba(244, 162, 97, 0.94));
+      --lil-mike-panel-light: rgba(255, 255, 255, 0.82);
+      --lil-mike-panel-dark: rgba(22, 25, 32, 0.76);
       --rainbow-shadow-gradient: repeating-linear-gradient(
         135deg,
         #ff4d4d 0 4px,
@@ -99,6 +102,10 @@
       --surface-accent-fill: var(--rainbow-shadow-gradient);
     }
 
+    :root[data-style-theme="lil-mike"] {
+      --surface-accent-fill: var(--lil-mike-accent-fill);
+    }
+
     [data-theme="dark"] body {
       background-image: 
         repeating-linear-gradient(
@@ -125,6 +132,160 @@
       min-height: 100dvh;
       background-color: var(--bg);
       transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .theme-scene {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    [data-style-theme="lil-mike"] .theme-scene {
+      opacity: 1;
+    }
+    .theme-scene__nebula {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(94, 234, 212, 0.28), transparent 20%),
+        radial-gradient(circle at 74% 22%, rgba(244, 162, 97, 0.24), transparent 18%),
+        radial-gradient(circle at 58% 76%, rgba(56, 189, 248, 0.18), transparent 24%),
+        linear-gradient(180deg, rgba(245, 248, 255, 0.96), rgba(227, 237, 250, 0.9));
+      opacity: 0.95;
+    }
+    [data-theme="dark"][data-style-theme="lil-mike"] .theme-scene__nebula {
+      background:
+        radial-gradient(circle at 16% 18%, rgba(94, 234, 212, 0.22), transparent 20%),
+        radial-gradient(circle at 74% 22%, rgba(244, 162, 97, 0.2), transparent 18%),
+        radial-gradient(circle at 58% 76%, rgba(56, 189, 248, 0.16), transparent 24%),
+        linear-gradient(180deg, rgba(8, 12, 22, 0.98), rgba(15, 25, 38, 0.94));
+    }
+    .theme-scene__grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.85) 38%, rgba(0, 0, 0, 0.96));
+      opacity: 0.32;
+      transform: perspective(1200px) rotateX(68deg) scale(1.5) translateY(20%);
+      transform-origin: center bottom;
+    }
+    [data-theme="dark"][data-style-theme="lil-mike"] .theme-scene__grid {
+      background-image:
+        linear-gradient(rgba(125, 211, 252, 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(253, 186, 116, 0.12) 1px, transparent 1px);
+      opacity: 0.38;
+    }
+    .theme-scene__stars,
+    .theme-scene__stars::before,
+    .theme-scene__stars::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-repeat: repeat;
+      pointer-events: none;
+    }
+    .theme-scene__stars {
+      background-image:
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.9) 0 1.1px, transparent 1.5px),
+        radial-gradient(circle at 64% 12%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.4px),
+        radial-gradient(circle at 82% 34%, rgba(191, 219, 254, 0.9) 0 1.2px, transparent 1.6px),
+        radial-gradient(circle at 36% 72%, rgba(255, 255, 255, 0.76) 0 0.9px, transparent 1.3px),
+        radial-gradient(circle at 58% 84%, rgba(196, 181, 253, 0.72) 0 1px, transparent 1.5px);
+      background-size: 340px 240px, 420px 280px, 380px 260px, 300px 220px, 440px 320px;
+      opacity: 0.52;
+      animation: starFieldFloat 28s linear infinite;
+    }
+    .theme-scene__stars::before {
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.7) 0 0.8px, transparent 1.2px),
+        radial-gradient(circle at 48% 46%, rgba(125, 211, 252, 0.78) 0 1px, transparent 1.4px),
+        radial-gradient(circle at 74% 64%, rgba(253, 186, 116, 0.64) 0 0.9px, transparent 1.3px),
+        radial-gradient(circle at 88% 26%, rgba(255, 255, 255, 0.7) 0 0.8px, transparent 1.2px);
+      background-size: 220px 180px, 280px 200px, 260px 180px, 320px 220px;
+      opacity: 0.42;
+      animation: starFieldFloatReverse 36s linear infinite;
+    }
+    .theme-scene__stars::after {
+      background-image:
+        radial-gradient(circle at 24% 28%, rgba(255, 255, 255, 0.94) 0 1.4px, transparent 1.8px),
+        radial-gradient(circle at 68% 18%, rgba(216, 180, 254, 0.72) 0 1.2px, transparent 1.7px),
+        radial-gradient(circle at 84% 78%, rgba(103, 232, 249, 0.8) 0 1.2px, transparent 1.7px);
+      background-size: 520px 360px, 620px 420px, 560px 380px;
+      opacity: 0.3;
+      animation: starTwinkle 7s ease-in-out infinite alternate;
+    }
+    @keyframes starFieldFloat {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-40px, 26px, 0); }
+    }
+    @keyframes starFieldFloatReverse {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(34px, -24px, 0); }
+    }
+    @keyframes starTwinkle {
+      from { opacity: 0.18; }
+      to { opacity: 0.38; }
+    }
+    .theme-scene__sprite {
+      position: absolute;
+      width: 108px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      filter: drop-shadow(0 10px 18px rgba(8, 12, 22, 0.18));
+      opacity: 0.92;
+      will-change: transform;
+    }
+    .theme-scene__sprite::before {
+      content: "💠";
+      position: absolute;
+      top: -14px;
+      right: 4px;
+      font-size: 13px;
+      line-height: 1;
+      opacity: 0.72;
+      filter: drop-shadow(0 0 6px rgba(45, 212, 191, 0.36));
+    }
+    .theme-scene__sprite::after {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto calc(100% - 8px);
+      width: 124px;
+      height: 10px;
+      transform-origin: left center;
+      background:
+        radial-gradient(circle at 10% 50%, rgba(251, 146, 60, 0.42), transparent 18%),
+        linear-gradient(90deg, rgba(45, 212, 191, 0.68), rgba(167, 139, 250, 0.3) 34%, rgba(34, 211, 238, 0.24) 56%, rgba(34, 211, 238, 0.08) 76%, transparent 100%);
+      clip-path: polygon(0 42%, 12% 30%, 42% 34%, 100% 50%, 42% 66%, 12% 70%, 0 58%);
+      transform: rotate(10deg);
+      opacity: 0.78;
+      filter: blur(0.25px);
+    }
+    .theme-scene__sprite--1 {
+      top: 12%;
+      left: 8%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='shell' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2399f6e4'/%3E%3Cstop offset='52%25' stop-color='%232dd4bf'/%3E%3Cstop offset='100%25' stop-color='%230891b2'/%3E%3C/linearGradient%3E%3ClinearGradient id='visor' x1='0%25' x2='100%25' y1='50%25' y2='50%25'%3E%3Cstop offset='0%25' stop-color='%23fcd34d'/%3E%3Cstop offset='100%25' stop-color='%23fb923c'/%3E%3C/linearGradient%3E%3CradialGradient id='core' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%23ecfeff'/%3E%3Cstop offset='100%25' stop-color='%232dd4bf'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='61' cy='64' rx='36' ry='28' fill='url(%23shell)' stroke='%230c4a6e' stroke-width='4'/%3E%3Ccircle cx='43' cy='57' r='6' fill='%23dbeafe' fill-opacity='.95'/%3E%3Crect x='37' y='48' width='48' height='18' rx='9' fill='url(%23visor)' stroke='%230f172a' stroke-width='4'/%3E%3Ccircle cx='32' cy='72' r='8' fill='%232dd4bf' stroke='%230f172a' stroke-width='4'/%3E%3Ccircle cx='90' cy='72' r='8' fill='%23fb923c' stroke='%230f172a' stroke-width='4'/%3E%3Cpath d='M26 40 L14 28' stroke='%230f172a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M96 38 L108 24' stroke='%230f172a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M49 92 L42 106' stroke='%230f172a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M75 92 L82 106' stroke='%230f172a' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='62' cy='63' r='3' fill='%230f172a'/%3E%3Ccircle cx='62' cy='63' r='6' fill='url(%23core)' fill-opacity='.68'/%3E%3C/svg%3E");
+      animation: lilMikeDriftA 24s ease-in-out infinite alternate;
+    }
+    @keyframes lilMikeDriftA {
+      0% { transform: translate3d(0, 0, 0) rotate(-6deg) scale(1); }
+      22% { transform: translate3d(22vw, 8vh, 0) rotate(8deg) scale(1.06); }
+      48% { transform: translate3d(50vw, -4vh, 0) rotate(-3deg) scale(0.98); }
+      72% { transform: translate3d(28vw, 20vh, 0) rotate(10deg) scale(1.02); }
+      100% { transform: translate3d(62vw, 10vh, 0) rotate(-5deg) scale(0.95); }
+    }
+    [data-style-theme="lil-mike"] body {
+      background-color: #eef6ff;
+    }
+    [data-theme="dark"][data-style-theme="lil-mike"] body {
+      background-color: #09121d;
     }
     a { color: inherit; }
     * { --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -195,6 +356,8 @@
       display: grid;
       gap: 12px;
       grid-template-columns: minmax(280px, 0.8fr) minmax(520px, 1.35fr) minmax(360px, 1fr);
+      position: relative;
+      z-index: 1;
     }
     .mobile-nav {
       display: none;
@@ -220,6 +383,18 @@
       display: flex;
       flex-direction: column;
       transition: var(--transition);
+    }
+    [data-style-theme="lil-mike"] .shell > .panel {
+      background: var(--lil-mike-panel-light);
+      border-color: rgba(56, 189, 248, 0.22);
+      box-shadow: 0 18px 40px -28px rgba(8, 12, 22, 0.5);
+      backdrop-filter: blur(10px) saturate(118%);
+      -webkit-backdrop-filter: blur(10px) saturate(118%);
+    }
+    [data-theme="dark"][data-style-theme="lil-mike"] .shell > .panel {
+      background: var(--lil-mike-panel-dark);
+      border-color: rgba(125, 211, 252, 0.2);
+      box-shadow: 0 18px 44px -28px rgba(0, 0, 0, 0.72);
     }
 
     [data-theme="dark"] .panel {
@@ -263,6 +438,12 @@
           transparent 2px
         );
       background-color: var(--panel-2);
+    }
+    [data-style-theme="lil-mike"] .shell > .panel.alt {
+      background: color-mix(in srgb, var(--lil-mike-panel-light) 92%, rgba(56, 189, 248, 0.08));
+    }
+    [data-theme="dark"][data-style-theme="lil-mike"] .shell > .panel.alt {
+      background: color-mix(in srgb, var(--lil-mike-panel-dark) 90%, rgba(34, 211, 238, 0.08));
     }
     .panel-body {
       display: flex;
@@ -974,6 +1155,12 @@
   </style>
 </head>
 <body data-mobile-panel="roots">
+  <div class="theme-scene" aria-hidden="true">
+    <div class="theme-scene__nebula"></div>
+    <div class="theme-scene__stars"></div>
+    <div class="theme-scene__grid"></div>
+    <div class="theme-scene__sprite theme-scene__sprite--1"></div>
+  </div>
   <main class="shell">
     <div class="mobile-nav" id="mobileNav">
       <button type="button" data-panel="roots" class="is-active">Roots</button>
@@ -992,6 +1179,7 @@
               <select id="styleThemeSelect">
                 <option value="default">Default</option>
                 <option value="rainbow-shadow">Rainbow shadow</option>
+                <option value="lil-mike">Lil Mike</option>
               </select>
             </label>
             <button id="themeToggleBtn" type="button" class="secondary" title="Toggle dark mode" style="padding:8px 12px; font-size:16px; border-radius:8px;">🌙</button>
