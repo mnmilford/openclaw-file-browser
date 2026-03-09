@@ -23,7 +23,6 @@
       --rope-shadow-offset: 4px;
       --rope-shadow-diagonal: 5px;
       --shell-gap: 12px;
-      --reserved-window-space: clamp(360px, 31vw, 540px);
       --rope-gradient: repeating-linear-gradient(
         135deg,
         #ff4d4d 0 4px,
@@ -147,10 +146,11 @@
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .shell {
-      margin: var(--shell-gap) calc(var(--reserved-window-space) + var(--shell-gap)) var(--shell-gap) var(--shell-gap);
+      width: calc(100vw - (var(--shell-gap) * 2));
+      margin: var(--shell-gap);
       display: grid;
       gap: 12px;
-      grid-template-columns: minmax(280px, 0.9fr) minmax(760px, 2.1fr);
+      grid-template-columns: minmax(280px, 0.8fr) minmax(520px, 1.35fr) minmax(360px, 1fr);
     }
     .mobile-nav {
       display: none;
@@ -509,7 +509,8 @@
       min-height: 0;
       flex: 1;
     }
-    .floating-preview-window {
+    .floating-image-window {
+      display: none;
       position: fixed;
       top: 12px;
       right: 12px;
@@ -523,11 +524,14 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
-    .floating-preview-window.is-interacting,
-    .floating-preview-window.is-interacting::after {
+    .floating-image-window.is-open {
+      display: flex;
+    }
+    .floating-image-window.is-interacting,
+    .floating-image-window.is-interacting::after {
       transition: none;
     }
-    .floating-preview-window.is-minimized {
+    .floating-image-window.is-minimized {
       height: auto !important;
       min-height: 0;
       overflow: visible;
@@ -561,45 +565,42 @@
       padding: 8px 12px;
     }
     .floating-window-content {
-      display: grid;
-      grid-template-rows: minmax(170px, 0.92fr) minmax(250px, 1.35fr);
+      display: flex;
+      flex-direction: column;
       min-height: 0;
       flex: 1;
       overflow: hidden;
     }
-    .floating-preview-window.is-minimized .floating-window-content {
+    .floating-image-window.is-minimized .floating-window-content {
       display: none;
     }
-    .floating-window-section {
+    .floating-image-stage {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       min-height: 0;
+      flex: 1;
+      padding: 18px;
+      background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+    }
+    .floating-image-stage img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 16px 28px -18px var(--shadow);
+    }
+    .floating-image-empty {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .floating-image-meta {
+      padding: 12px 18px 16px;
       border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
-    }
-    .floating-window-section:first-child {
-      border-top: none;
-    }
-    .floating-window-section-head {
-      padding: 12px 18px 8px;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .floating-preview-window .list,
-    .floating-preview-window .tree,
-    .floating-preview-window .preview {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-    .floating-preview-window .list {
-      padding-top: 0;
-      padding-bottom: 16px;
-    }
-    .floating-preview-window .preview {
-      padding-top: 0;
-      padding-bottom: 16px;
     }
     .resize-handle {
       position: absolute;
@@ -818,23 +819,19 @@
 
     @media (max-width: 1180px) {
       :root {
-        --reserved-window-space: clamp(320px, 34vw, 460px);
-      }
       .shell {
-        grid-template-columns: minmax(250px, 0.82fr) minmax(0, 1.7fr);
+        grid-template-columns: minmax(250px, 0.78fr) minmax(0, 1.35fr) minmax(320px, 0.95fr);
       }
-      .floating-preview-window {
+      .floating-image-window {
         width: clamp(320px, 34vw, 460px);
       }
     }
     @media (max-width: 780px) {
       body { padding-bottom: 18px; }
-      :root {
-        --reserved-window-space: 0px;
-      }
       .shell {
         grid-template-columns: 1fr;
         margin: 8px;
+        width: auto;
       }
       .mobile-nav {
         display: grid;
@@ -847,7 +844,7 @@
         min-height: auto;
         border-radius: 16px;
       }
-      .floating-preview-window {
+      .floating-image-window {
         position: static;
         top: auto;
         right: auto;
@@ -864,9 +861,6 @@
       .floating-window-head {
         cursor: default;
         touch-action: auto;
-      }
-      .floating-window-content {
-        grid-template-rows: auto minmax(260px, 1fr);
       }
       .resize-handle {
         display: none;
@@ -980,29 +974,43 @@
       </div>
     </section>
 
-  </main>
-
-  <section class="panel preview-panel floating-preview-window" id="floatingPreviewWindow">
-    <div class="floating-window-head" id="floatingWindowHead">
-      <div class="floating-window-title">
+    <section class="panel preview-panel">
+      <div class="head">
         <h2>Recent changes and preview</h2>
         <p class="sub">Newest files first. Click any file to open a preview.</p>
       </div>
+      <div class="panel-body">
+        <div id="recentBlock">
+          <div class="section"><h2>Recent</h2></div>
+          <div id="recent" class="list"></div>
+        </div>
+        <div id="previewBlock" class="preview-block">
+          <div class="section"><h2>Preview</h2></div>
+          <div id="preview" class="preview">
+            <div class="empty">Choose a file from the directory listing or the recent changes feed.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <section class="panel floating-image-window" id="floatingImageWindow">
+    <div class="floating-window-head" id="floatingWindowHead">
+      <div class="floating-window-title">
+        <h2 id="floatingWindowTitle">Image preview</h2>
+        <p class="sub" id="floatingWindowSubtitle">Large view for image files.</p>
+      </div>
       <div class="floating-window-actions">
+        <button type="button" class="secondary window-toggle" id="floatingWindowCloseBtn" title="Close window">✕</button>
         <button type="button" class="secondary window-toggle" id="floatingWindowToggleBtn" title="Collapse window">_</button>
       </div>
     </div>
     <div class="panel-body floating-window-content" id="floatingWindowContent">
-      <div id="recentBlock" class="floating-window-section">
-        <div class="floating-window-section-head">Recent</div>
-        <div id="recent" class="list"></div>
+      <div class="floating-image-stage" id="floatingImageStage">
+        <div class="floating-image-empty">Open an image file to preview it here.</div>
       </div>
-      <div id="previewBlock" class="preview-block floating-window-section">
-        <div class="floating-window-section-head">Preview</div>
-        <div id="preview" class="preview">
-          <div class="empty">Choose a file from the directory listing or the recent changes feed.</div>
-        </div>
-      </div>
+      <div class="floating-image-meta" id="floatingImageMeta">No image selected.</div>
     </div>
     <div class="resize-handle" data-resize="n"></div>
     <div class="resize-handle" data-resize="e"></div>
@@ -1074,14 +1082,20 @@
     const treeTitleEl = document.getElementById("treeTitle");
     const treeStatusEl = document.getElementById("treeStatus");
     const mobileNavEl = document.getElementById("mobileNav");
-    const floatingPreviewWindowEl = document.getElementById("floatingPreviewWindow");
+    const floatingImageWindowEl = document.getElementById("floatingImageWindow");
     const floatingWindowHeadEl = document.getElementById("floatingWindowHead");
     const floatingWindowToggleBtn = document.getElementById("floatingWindowToggleBtn");
+    const floatingWindowCloseBtn = document.getElementById("floatingWindowCloseBtn");
+    const floatingWindowTitleEl = document.getElementById("floatingWindowTitle");
+    const floatingWindowSubtitleEl = document.getElementById("floatingWindowSubtitle");
+    const floatingImageStageEl = document.getElementById("floatingImageStage");
+    const floatingImageMetaEl = document.getElementById("floatingImageMeta");
     const mobileLayoutQuery = window.matchMedia("(max-width: 780px)");
     const floatingWindowState = {
       minimized: false,
       rect: null,
       interaction: null,
+      open: false,
     };
 
     function isMobileLayout() {
@@ -1106,44 +1120,25 @@
       };
     }
 
-    function updateReservedWindowSpace() {
-      if (isMobileLayout() || floatingWindowState.minimized || !floatingWindowState.rect) {
-        document.documentElement.style.setProperty("--reserved-window-space", "0px");
-        return;
-      }
-      const rightGap = window.innerWidth - (floatingWindowState.rect.left + floatingWindowState.rect.width);
-      const isDockedRight = rightGap <= 24;
-      if (!isDockedRight) {
-        document.documentElement.style.setProperty("--reserved-window-space", "0px");
-        return;
-      }
-      document.documentElement.style.setProperty("--reserved-window-space", `${Math.round(floatingWindowState.rect.width + 24)}px`);
-    }
-
     function applyFloatingWindowRect(rect) {
       if (isMobileLayout()) {
-        floatingPreviewWindowEl.style.removeProperty("right");
-        floatingPreviewWindowEl.style.removeProperty("left");
-        floatingPreviewWindowEl.style.removeProperty("top");
-        floatingPreviewWindowEl.style.removeProperty("width");
-        floatingPreviewWindowEl.style.removeProperty("height");
-        updateReservedWindowSpace();
+        floatingImageWindowEl.style.removeProperty("right");
+        floatingImageWindowEl.style.removeProperty("left");
+        floatingImageWindowEl.style.removeProperty("top");
+        floatingImageWindowEl.style.removeProperty("width");
+        floatingImageWindowEl.style.removeProperty("height");
         return;
       }
       floatingWindowState.rect = clampWindowRect(rect);
-      floatingPreviewWindowEl.style.right = "auto";
-      floatingPreviewWindowEl.style.left = `${floatingWindowState.rect.left}px`;
-      floatingPreviewWindowEl.style.top = `${floatingWindowState.rect.top}px`;
-      floatingPreviewWindowEl.style.width = `${floatingWindowState.rect.width}px`;
-      floatingPreviewWindowEl.style.height = `${floatingWindowState.rect.height}px`;
-      updateReservedWindowSpace();
+      floatingImageWindowEl.style.right = "auto";
+      floatingImageWindowEl.style.left = `${floatingWindowState.rect.left}px`;
+      floatingImageWindowEl.style.top = `${floatingWindowState.rect.top}px`;
+      floatingImageWindowEl.style.width = `${floatingWindowState.rect.width}px`;
+      floatingImageWindowEl.style.height = `${floatingWindowState.rect.height}px`;
     }
 
     function initializeFloatingWindow() {
-      if (isMobileLayout()) {
-        updateReservedWindowSpace();
-        return;
-      }
+      if (isMobileLayout()) return;
       const width = Math.min(Math.max(window.innerWidth * 0.31, 360), 540);
       const height = Math.min(window.innerHeight * 0.84, 920);
       applyFloatingWindowRect({
@@ -1156,10 +1151,21 @@
 
     function setFloatingWindowMinimized(minimized) {
       floatingWindowState.minimized = minimized;
-      floatingPreviewWindowEl.classList.toggle("is-minimized", minimized);
+      floatingImageWindowEl.classList.toggle("is-minimized", minimized);
       floatingWindowToggleBtn.textContent = minimized ? "+" : "_";
       floatingWindowToggleBtn.title = minimized ? "Expand window" : "Collapse window";
-      updateReservedWindowSpace();
+    }
+
+    function closeFloatingImageWindow() {
+      floatingWindowState.open = false;
+      floatingImageWindowEl.classList.remove("is-open");
+      setFloatingWindowMinimized(false);
+    }
+
+    function openFloatingImageWindow() {
+      floatingWindowState.open = true;
+      floatingImageWindowEl.classList.add("is-open");
+      if (!floatingWindowState.rect && !isMobileLayout()) initializeFloatingWindow();
     }
 
     function startWindowInteraction(event, mode, edge = "") {
@@ -1175,13 +1181,14 @@
         startY: event.clientY,
         startRect: { ...floatingWindowState.rect },
       };
-      floatingPreviewWindowEl.classList.add("is-interacting");
+      if (!floatingWindowState.open) return;
+      floatingImageWindowEl.classList.add("is-interacting");
       event.preventDefault();
     }
 
     function stopWindowInteraction() {
       floatingWindowState.interaction = null;
-      floatingPreviewWindowEl.classList.remove("is-interacting");
+      floatingImageWindowEl.classList.remove("is-interacting");
     }
 
     function handleWindowPointerMove(event) {
@@ -1360,9 +1367,18 @@
     function renderPreviewView() {
       let body = "";
       if (cf.kind === "image" && cf.rawUrl) {
-        body = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" />`;
+        body = `
+          <div class="preview-meta" style="margin-bottom:10px;">Image preview opened in separate window.</div>
+          <button type="button" id="openFloatingImageBtn">Open large image preview</button>
+        `;
+        floatingWindowTitleEl.textContent = cf.name;
+        floatingWindowSubtitleEl.textContent = cf.path;
+        floatingImageStageEl.innerHTML = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" />`;
+        floatingImageMetaEl.textContent = `${fmtBytes(cf.size || 0)} • ${cf.mtime || ""}`;
+        openFloatingImageWindow();
       } else {
         body = `<pre>${esc(cf.content || "")}</pre>`;
+        closeFloatingImageWindow();
       }
       const truncWarn = cf.truncated ? `<div class="badge" style="margin-bottom:8px;">preview truncated — full file loaded on edit</div>` : "";
       const editBtn = (cf.kind === "text") ? `<button type="button" id="editFileBtn" style="margin-top:10px;">✏️ Edit</button>` : "";
@@ -1376,6 +1392,8 @@
       `;
       const editBtn2 = document.getElementById("editFileBtn");
       if (editBtn2) editBtn2.addEventListener("click", enterEditMode);
+      const openFloatingImageBtn = document.getElementById("openFloatingImageBtn");
+      if (openFloatingImageBtn) openFloatingImageBtn.addEventListener("click", openFloatingImageWindow);
     }
 
     async function enterEditMode() {
@@ -1540,18 +1558,16 @@
       button.addEventListener("click", () => setMobilePanel(button.dataset.panel));
     });
     floatingWindowHeadEl.addEventListener("pointerdown", event => startWindowInteraction(event, "drag"));
-    floatingPreviewWindowEl.querySelectorAll(".resize-handle").forEach(handle => {
+    floatingImageWindowEl.querySelectorAll(".resize-handle").forEach(handle => {
       handle.addEventListener("pointerdown", event => startWindowInteraction(event, "resize", handle.dataset.resize));
     });
     window.addEventListener("pointermove", handleWindowPointerMove);
     window.addEventListener("pointerup", stopWindowInteraction);
     window.addEventListener("pointercancel", stopWindowInteraction);
     floatingWindowToggleBtn.addEventListener("click", () => setFloatingWindowMinimized(!floatingWindowState.minimized));
+    floatingWindowCloseBtn.addEventListener("click", closeFloatingImageWindow);
     window.addEventListener("resize", () => {
-      if (isMobileLayout()) {
-        updateReservedWindowSpace();
-        return;
-      }
+      if (isMobileLayout()) return;
       if (!floatingWindowState.rect) {
         initializeFloatingWindow();
         return;
@@ -1566,7 +1582,6 @@
       } else {
         applyFloatingWindowRect(floatingWindowState.rect);
       }
-      updateReservedWindowSpace();
     });
     document.getElementById("refreshAllBtn").addEventListener("click", refreshAll);
 
