@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Claude vs Codex Retro Board</title>
+  <style>
+    :root {
+      --ink: #1a0030;
+      --link: #00d7ff;
+      --panel-bg: #fffbcc;
+      --panel-border: #ff00cc;
+      --panel-shadow: #00a2ff;
+      --ok-bg: #00ff8c;
+      --ok-tx: #00381e;
+      --bad-bg: #ff4d6d;
+      --bad-tx: #fff;
+      --spurs-black: #0f0f10;
+      --spurs-silver: #c4ced4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+      color: var(--ink);
+      min-height: 100dvh;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 8% 10%, rgba(255,255,255,0.95) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 14% 34%, rgba(255,255,200,0.95) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 64% 18%, rgba(173,232,244,0.95) 0 1.2px, transparent 1.8px),
+        radial-gradient(circle at 78% 40%, rgba(255,173,214,0.95) 0 1.2px, transparent 1.8px),
+        radial-gradient(circle at 88% 75%, rgba(255,255,255,1) 0 1px, transparent 1.6px),
+        linear-gradient(135deg, #240046 0%, #5a189a 22%, #9d4edd 45%, #f72585 63%, #4cc9f0 82%, #72efdd 100%);
+      background-size: auto, auto, auto, auto, auto, cover;
+      background-attachment: fixed;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .wrap { width: min(1150px, 100%); margin: 0 auto; position: relative; z-index: 1; }
+
+    .retro-banner {
+      background: repeating-linear-gradient(45deg, #fff 0, #fff 8px, #ffe066 8px, #ffe066 16px);
+      border: 4px outset #ff00cc;
+      box-shadow: 0 0 0 4px #00f5ff, 0 10px 26px rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .title {
+      margin: 0;
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      letter-spacing: 1px;
+      font-size: clamp(28px, 5vw, 56px);
+      line-height: 1;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ff006e, #8338ec, #3a86ff, #00f5d4, #ffbe0b, #fb5607, #ff006e);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 2px 2px 0 #fff, 4px 4px 0 #000;
+    }
+    .sub {
+      margin: 6px 0 0;
+      font-weight: 700;
+      color: #1d0046;
+      text-shadow: 1px 1px 0 #fff;
+    }
+    .blink {
+      animation: blink 1s steps(2, start) infinite;
+      color: #ff006e;
+      font-weight: 900;
+      margin-left: 8px;
+    }
+    @keyframes blink { to { visibility: hidden; } }
+
+    .spurs-flair {
+      margin: 0 0 12px;
+      border: 3px solid var(--spurs-black);
+      background:
+        linear-gradient(90deg,
+          #00a8e8 0 12.5%,
+          #f15bb5 12.5% 25%,
+          #fee440 25% 37.5%,
+          #00bbf9 37.5% 50%,
+          #ffffff 50% 62.5%,
+          #9b5de5 62.5% 75%,
+          #f15bb5 75% 87.5%,
+          #00f5d4 87.5% 100%);
+      color: var(--spurs-black);
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      text-align: center;
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .topbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .ctrls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px ridge #ff00cc;
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    button, .link-btn {
+      border: 2px outset #fff;
+      background: linear-gradient(180deg, #ffffff, #ffd6ff);
+      color: #2d0061;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      text-decoration: none;
+      text-transform: uppercase;
+      box-shadow: 2px 2px 0 #2d0061;
+    }
+    button:active, .link-btn:active { border-style: inset; transform: translate(1px, 1px); }
+    .danger { background: linear-gradient(180deg, #ff9aa2, #ff4d6d); color: #fff; }
+    .secondary { background: linear-gradient(180deg, #9bf6ff, #48cae4); }
+
+    .countdown {
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      font-weight: 700;
+      background: #000;
+      color: #00ff8c;
+      border: 2px inset #888;
+      padding: 6px 9px;
+    }
+
+    .marq {
+      border: 3px double #00d7ff;
+      background: #08001a;
+      color: #00ff8c;
+      font-family: "Courier New", monospace;
+      font-weight: 700;
+      padding: 6px;
+      margin-bottom: 14px;
+      text-shadow: 0 0 5px #00ff8c;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .span-2 { grid-column: span 2; }
+
+    .card {
+      background: var(--panel-bg);
+      border: 3px outset var(--panel-border);
+      box-shadow: 4px 4px 0 var(--panel-shadow), inset 0 0 0 2px rgba(255,255,255,0.75);
+      border-radius: 10px;
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(255,255,255,0.16) 0,
+        rgba(255,255,255,0.16) 4px,
+        transparent 4px,
+        transparent 10px
+      );
+      opacity: 0.5;
+    }
+    .spurs-card {
+      border-color: var(--spurs-black);
+      box-shadow: 4px 4px 0 var(--spurs-silver), inset 0 0 0 2px rgba(255,255,255,0.75);
+      background: linear-gradient(180deg, #f8fafc, #e5e7eb);
+    }
+    .spurs-card .k { color: #1f2937; }
+
+    .k {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #7000b5;
+      margin-bottom: 4px;
+      font-size: 13px;
+      position: relative;
+      z-index: 1;
+    }
+    .v {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1f0049;
+      text-shadow: 1px 1px 0 #fff;
+      position: relative;
+      z-index: 1;
+    }
+    .mono {
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 4px;
+      position: relative;
+      z-index: 1;
+      word-break: break-word;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 2px solid #000;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .ok { background: var(--ok-bg); color: var(--ok-tx); }
+    .bad { background: var(--bad-bg); color: var(--bad-tx); }
+
+    .link {
+      color: var(--link);
+      font-weight: 900;
+      text-decoration: underline;
+      text-decoration-style: wavy;
+      text-underline-offset: 2px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .statusline {
+      margin-top: 8px;
+      min-height: 18px;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+    pre {
+      margin: 10px 0 0;
+      padding: 10px;
+      border: 3px inset #00f5ff;
+      border-radius: 8px;
+      background: #0d0221;
+      color: #f1f5ff;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      max-height: 320px;
+      overflow: auto;
+      white-space: pre-wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .spotify-widget {
+      position: fixed;
+      right: 20px;
+      bottom: 18px;
+      width: min(390px, calc(100vw - 24px));
+      height: 230px;
+      z-index: 9999;
+      border: 3px outset #ff00cc;
+      box-shadow: 0 0 0 3px #00f5ff, 6px 6px 0 rgba(0,0,0,0.45);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #2b0049, #0b0220);
+      color: #fff;
+      overflow: hidden;
+      resize: both;
+      min-width: 260px;
+      min-height: 180px;
+      max-width: 95vw;
+      max-height: 90vh;
+    }
+    .spotify-widget.minimized {
+      right: 0;
+      left: auto !important;
+      top: 36%;
+      bottom: auto !important;
+      width: 54px !important;
+      height: 220px !important;
+      min-width: 54px;
+      min-height: 220px;
+      resize: none;
+      border-radius: 12px 0 0 12px;
+    }
+    .spotify-handle {
+      cursor: move;
+      user-select: none;
+      padding: 8px 10px;
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      background: repeating-linear-gradient(90deg, #ff00cc 0 12px, #7b2cbf 12px 24px);
+      border-bottom: 2px solid #00f5ff;
+      text-shadow: 1px 1px 0 #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .spotify-min {
+      border: 1px outset #fff;
+      background: #fff;
+      color: #220043;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 3px 6px;
+      cursor: pointer;
+      box-shadow: none;
+    }
+    .spotify-widget.minimized .spotify-handle {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      height: 100%;
+      border-bottom: 0;
+      border-left: 2px solid #00f5ff;
+      justify-content: center;
+      padding: 8px 6px;
+      cursor: pointer;
+    }
+    .spotify-widget.minimized .spotify-body { display: none; }
+    .spotify-widget.minimized .spotify-min {
+      transform: rotate(180deg);
+      margin-top: 8px;
+    }
+    .spotify-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 0;
+      display: block;
+    }
+    .spotify-body {
+      height: calc(100% - 40px);
+      padding: 0;
+      background: #130227;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+      .span-2 { grid-column: span 1; }
+      .title { font-size: clamp(26px, 8vw, 42px); }
+      .countdown { width: 100%; text-align: center; }
+      .ctrls { width: 100%; }
+      .spotify-widget { width: min(360px, calc(100vw - 12px)); right: 6px; }
+      .spotify-widget.minimized { right: 0; }
+    }
+
+    .cursor-sparkle {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.95;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 18px rgba(255, 0, 200, 0.8);
+      animation: sparkle-pop 650ms ease-out forwards;
+      mix-blend-mode: screen;
+    }
+    @keyframes sparkle-pop {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.1) rotate(160deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="retro-banner">
+      <h1 class="title">Claude vs Codex</h1>
+      <p class="sub">Agent Battle Board: local CLI telemetry for your OpenClaw lab<span class="blink">LIVE</span></p>
+    </section>
+
+    <div class="spurs-flair">GO SPURS GO  |  SILVER + BLACK  |  SAN ANTONIO ENERGY</div>
+
+    <div class="marq">
+      <marquee behavior="alternate" scrollamount="7">WELCOME TO THE AGENT COMMAND CENTER :: FRESHNESS :: HISTORY :: SPEED :: RETRO POWERED</marquee>
+    </div>
+
+    <header class="topbar">
+      <div class="ctrls">
+        <a class="link-btn" href="http://localhost:18789" target="_blank" rel="noreferrer">Open OpenClaw UI</a>
+        <a class="link-btn secondary" href="/files">Open File Watch</a>
+        <button id="tailOpenclawBtn" class="secondary" type="button">Tail OpenClaw Logs</button>
+        <button id="restartOpenclawBtn" class="danger" type="button">Restart OpenClaw</button>
+        <button id="refreshBtn" type="button">Refresh Now</button>
+        <div id="countdown" class="countdown">Next refresh: 60s</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="k">Comparison</div>
+        <div class="v" id="freshnessWinner">-</div>
+        <div class="mono" id="freshnessDelta">-</div>
+        <div class="mono" id="lastUpdated">Last updated: -</div>
+      </section>
+
+      <section class="card spurs-card">
+        <div class="k">Spurs Radar</div>
+        <div class="v" id="spursRecord">Record: -</div>
+        <div class="mono" id="spursNext">Next: -</div>
+        <div class="mono" id="spursSummary">-</div>
+        <div class="mono" id="spursUpdated">Source: ESPN</div>
+      </section>
+
+      <section class="card">
+        <div class="k">Claude CLI</div>
+        <div class="v" id="claudeVersion">-</div>
+        <div class="mono" id="claudePath">-</div>
+        <div class="mono" id="claudeProc">-</div>
+      </section>
+
+      <section class="card">
+        <div class="k">Codex CLI</div>
+        <div class="v" id="codexVersion">-</div>
+        <div class="mono" id="codexPath">-</div>
+        <div class="mono" id="codexProc">-</div>
+      </section>
+
+      <section class="card">
+        <div class="k">Claude Activity</div>
+        <div class="v" id="claudeEntries">-</div>
+        <div class="mono" id="claudeLastAt">-</div>
+        <div class="mono" id="claudeLastMeta">-</div>
+        <div class="mono" id="claudeLastPreview">-</div>
+      </section>
+
+      <section class="card">
+        <div class="k">Codex Activity</div>
+        <div class="v" id="codexEntries">-</div>
+        <div class="mono" id="codexLastAt">-</div>
+        <div class="mono" id="codexLastMeta">-</div>
+        <div class="mono" id="codexLastPreview">-</div>
+      </section>
+
+      <section class="card">
+        <div class="k">Host Quick Stats</div>
+        <div class="v" id="host">-</div>
+        <div class="mono" id="uptime">-</div>
+        <div class="mono" id="mem">-</div>
+        <div class="mono" id="disk">-</div>
+      </section>
+
+      <section class="card">
+        <div class="k">Live Chat</div>
+        <div class="v"><a class="link" href="/chat">Open chat launcher</a></div>
+        <div class="mono">Launches OpenClaw live chat.</div>
+      </section>
+
+      <section class="card span-2">
+        <div class="k">History Tails</div>
+        <div class="actions">
+          <button id="loadClaudeHistoryBtn" class="secondary" type="button">Summarize Claude History</button>
+          <button id="loadCodexHistoryBtn" class="secondary" type="button">Summarize Codex History</button>
+          <button id="summarizeOpenclawBtn" class="secondary" type="button">Summarize OpenClaw Health</button>
+        </div>
+        <div id="actionStatus" class="statusline">No action yet.</div>
+        <pre id="logsBox">Plain-language history summaries will appear here.</pre>
+      </section>
+    </div>
+  </main>
+
+  <aside id="spotifyWidget" class="spotify-widget">
+    <div id="spotifyHandle" class="spotify-handle">
+      <span>Now Playing</span>
+      <button id="spotifyMinBtn" class="spotify-min" type="button">_</button>
+    </div>
+    <div class="spotify-body">
+      <iframe
+        data-testid="embed-iframe"
+        class="spotify-frame"
+        src="https://open.spotify.com/embed/playlist/37i9dQZEVXcCcj3RsFZPHH?utm_source=generator&theme=0"
+        width="100%"
+        height="152"
+        frameborder="0"
+        allowfullscreen=""
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"></iframe>
+    </div>
+  </aside>
+
+  <script>
+    const REFRESH_SECONDS = 60;
+    let secsLeft = REFRESH_SECONDS;
+
+    function formatAge(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (d > 0) return `${d}d ${h}h ${m}m ago`;
+      if (h > 0) return `${h}h ${m}m ago`;
+      return `${m}m ago`;
+    }
+
+    function parseTs(ts) {
+      if (!ts) return null;
+      const n = Date.parse(ts);
+      return Number.isNaN(n) ? null : n;
+    }
+
+    function renderComparison(d) {
+      const now = Date.now();
+      const claudeTs = parseTs(d.claude.last_event.timestamp);
+      const codexTs = parseTs(d.codex.last_event.timestamp);
+      const winnerEl = document.getElementById("freshnessWinner");
+      const deltaEl = document.getElementById("freshnessDelta");
+
+      if (!claudeTs && !codexTs) {
+        winnerEl.innerHTML = '<span class="pill bad">No recent data</span>';
+        deltaEl.textContent = 'Neither history stream has a parsed timestamp.';
+        return;
+      }
+      if (claudeTs && !codexTs) {
+        winnerEl.innerHTML = '<span class="pill ok">Claude is fresher</span>';
+        deltaEl.textContent = `Claude last activity ${formatAge(now - claudeTs)}.`;
+        return;
+      }
+      if (!claudeTs && codexTs) {
+        winnerEl.innerHTML = '<span class="pill ok">Codex is fresher</span>';
+        deltaEl.textContent = `Codex last activity ${formatAge(now - codexTs)}.`;
+        return;
+      }
+
+      if (claudeTs >= codexTs) {
+        winnerEl.innerHTML = '<span class="pill ok">Claude is fresher</span>';
+        deltaEl.textContent = `Claude ${formatAge(now - claudeTs)}; Codex ${formatAge(now - codexTs)}.`;
+      } else {
+        winnerEl.innerHTML = '<span class="pill ok">Codex is fresher</span>';
+        deltaEl.textContent = `Codex ${formatAge(now - codexTs)}; Claude ${formatAge(now - claudeTs)}.`;
+      }
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('/api/status', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        document.getElementById('claudeVersion').textContent = d.claude.cli_version || 'Claude CLI not found';
+        document.getElementById('claudePath').textContent = d.claude.cli_path ? `path ${d.claude.cli_path}` : 'path unavailable';
+        document.getElementById('claudeProc').textContent = `running processes ${d.claude.process_count}`;
+        document.getElementById('claudeEntries').textContent = `history entries ${d.claude.history.entries}`;
+        document.getElementById('claudeLastAt').textContent = d.claude.last_event.timestamp
+          ? `last event ${new Date(d.claude.last_event.timestamp).toLocaleString()}`
+          : 'last event unavailable';
+        document.getElementById('claudeLastMeta').textContent = `project ${d.claude.last_event.project || '-'} | session ${d.claude.last_event.session_id || '-'}`;
+        document.getElementById('claudeLastPreview').textContent = d.claude.last_event.preview || '(no preview)';
+
+        document.getElementById('codexVersion').textContent = d.codex.cli_version || 'Codex CLI not found';
+        document.getElementById('codexPath').textContent = d.codex.cli_path ? `path ${d.codex.cli_path}` : 'path unavailable';
+        document.getElementById('codexProc').textContent = `running processes ${d.codex.process_count}`;
+        document.getElementById('codexEntries').textContent = `history entries ${d.codex.history.entries}`;
+        document.getElementById('codexLastAt').textContent = d.codex.last_event.timestamp
+          ? `last event ${new Date(d.codex.last_event.timestamp).toLocaleString()}`
+          : 'last event unavailable';
+        document.getElementById('codexLastMeta').textContent = `project ${d.codex.last_event.project || '-'} | session ${d.codex.last_event.session_id || '-'}`;
+        document.getElementById('codexLastPreview').textContent = d.codex.last_event.preview || '(no preview)';
+
+        document.getElementById('host').textContent = d.hostname;
+        document.getElementById('uptime').textContent = `uptime ${d.host_uptime} | load ${d.load_avg}`;
+        document.getElementById('mem').textContent = `mem ${d.mem.used} / ${d.mem.total} | swap ${d.swap.used} / ${d.swap.total}`;
+        document.getElementById('disk').textContent = `disk ${d.disk.used} / ${d.disk.total} | free ${d.disk.free}`;
+
+        document.getElementById('spursRecord').textContent = `Record: ${d.spurs.record || '-'}`;
+        document.getElementById('spursNext').textContent = `Next: ${d.spurs.next_game || '-'} (${d.spurs.status_detail || 'time tbd'})`;
+        document.getElementById('spursSummary').textContent = d.spurs.summary || '-';
+        document.getElementById('spursUpdated').textContent = `Source: ${String(d.spurs.source || 'espn').toUpperCase()} | Updated ${new Date(d.spurs.updated_at).toLocaleString()}`;
+
+        renderComparison(d);
+        document.getElementById('lastUpdated').textContent = `Last updated: ${new Date(d.generated_at).toLocaleString()}`;
+      } catch (err) {
+        document.getElementById('lastUpdated').textContent = `Last updated: error (${err.message})`;
+      }
+      secsLeft = REFRESH_SECONDS;
+    }
+
+    async function loadClaudeHistory() {
+      const logsBox = document.getElementById('logsBox');
+      const actionStatus = document.getElementById('actionStatus');
+      actionStatus.textContent = 'Summarizing Claude history...';
+      try {
+        const res = await fetch('/api/claude/history?lines=60', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message || 'Failed to load Claude history');
+        logsBox.textContent = summarizeClaudeHistory(data.lines || []);
+        actionStatus.textContent = 'Summarized Claude history from /root/.claude/history.jsonl';
+      } catch (err) {
+        actionStatus.textContent = `Claude history load failed: ${err.message}`;
+      }
+    }
+
+    async function loadOpenclawLogs() {
+      const logsBox = document.getElementById('logsBox');
+      const actionStatus = document.getElementById('actionStatus');
+      actionStatus.textContent = 'Summarizing OpenClaw health...';
+      try {
+        const res = await fetch('/api/logs?service=openclaw.service&lines=80', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message || 'Failed to load OpenClaw logs');
+        logsBox.textContent = summarizeOpenclawHealth(data.logs || '');
+        actionStatus.textContent = 'Summarized openclaw.service health from last 80 lines';
+      } catch (err) {
+        actionStatus.textContent = `OpenClaw logs failed: ${err.message}`;
+      }
+    }
+
+    async function restartOpenclaw() {
+      const actionStatus = document.getElementById('actionStatus');
+      actionStatus.textContent = 'Restarting OpenClaw...';
+      try {
+        const res = await fetch('/api/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'restart_openclaw' }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message || 'Restart failed');
+        actionStatus.textContent = 'OpenClaw restart requested successfully.';
+        await loadData();
+      } catch (err) {
+        actionStatus.textContent = `OpenClaw restart failed: ${err.message}`;
+      }
+    }
+
+    async function loadCodexHistory() {
+      const logsBox = document.getElementById('logsBox');
+      const actionStatus = document.getElementById('actionStatus');
+      actionStatus.textContent = 'Summarizing Codex history...';
+      try {
+        const res = await fetch('/api/codex/history?lines=60', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message || 'Failed to load Codex history');
+        logsBox.textContent = summarizeCodexHistory(data.lines || []);
+        actionStatus.textContent = 'Summarized Codex history from /root/.codex/history.jsonl';
+      } catch (err) {
+        actionStatus.textContent = `Codex history load failed: ${err.message}`;
+      }
+    }
+
+    function summarizeClaudeHistory(lines) {
+      const entries = [];
+      for (const line of lines) {
+        try {
+          const obj = JSON.parse(line);
+          const text = String(obj.display || '').trim();
+          const ts = Number(obj.timestamp || 0);
+          if (!text) continue;
+          entries.push({
+            text,
+            ts,
+            project: String(obj.project || ''),
+            session: String(obj.sessionId || ''),
+          });
+        } catch (_) {}
+      }
+      return summarizeEntries(entries, 'Claude');
+    }
+
+    function summarizeCodexHistory(lines) {
+      const entries = [];
+      for (const line of lines) {
+        try {
+          const obj = JSON.parse(line);
+          const text = String(obj.text || '').trim();
+          const ts = Number(obj.ts || 0) * 1000;
+          if (!text) continue;
+          entries.push({
+            text,
+            ts,
+            project: '/root',
+            session: String(obj.session_id || ''),
+          });
+        } catch (_) {}
+      }
+      return summarizeEntries(entries, 'Codex');
+    }
+
+    function summarizeEntries(entries, label) {
+      if (!entries.length) return `No ${label} history entries found in the requested range.`;
+
+      entries.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+      const latest = entries[entries.length - 1];
+      const uniqueSessions = new Set(entries.map(e => e.session).filter(Boolean)).size;
+      const snippets = entries.slice(-5).map((e, i) => {
+        const clipped = e.text.length > 130 ? `${e.text.slice(0, 127)}...` : e.text;
+        return `${i + 1}. ${clipped}`;
+      });
+
+      const keywords = ['dashboard', 'spurs', 'spotify', 'openclaw', 'claude', 'codex', 'chat', 'style', 'widget', 'history'];
+      const detected = keywords.filter(k => entries.some(e => e.text.toLowerCase().includes(k)));
+      const themeLine = detected.length
+        ? `Main topics: ${detected.join(', ')}.`
+        : 'Main topics: general agent/dashboard work.';
+
+      const latestTime = latest.ts ? new Date(latest.ts).toLocaleString() : 'unknown time';
+      return [
+        `${label} history summary`,
+        `- Entries reviewed: ${entries.length}`,
+        `- Sessions represented: ${uniqueSessions || 1}`,
+        `- Latest activity: ${latestTime}`,
+        `- Current focus: ${themeLine}`,
+        '',
+        'Recent user intent snapshots:',
+        ...snippets,
+      ].join('\n');
+    }
+
+    function summarizeOpenclawHealth(logText) {
+      const lines = String(logText || '').split('\n').map(s => s.trim()).filter(Boolean);
+      if (!lines.length) return 'No OpenClaw log lines were returned for the selected range.';
+
+      const low = lines.map(l => l.toLowerCase());
+      const errorCount = low.filter(l =>
+        l.includes(' error') || l.includes(' failed') || l.includes(' exception') || l.includes('traceback')
+      ).length;
+      const warnCount = low.filter(l =>
+        l.includes(' warn') || l.includes(' warning') || l.includes(' stale') || l.includes('timeout')
+      ).length;
+      const restartHints = low.filter(l =>
+        l.includes('restarting') || l.includes('started') || l.includes('disconnected') || l.includes('connected')
+      ).length;
+      const wsEvents = low.filter(l => l.includes('[ws]')).length;
+      const recent = lines.slice(-5);
+
+      let overall = 'stable';
+      if (errorCount > 3) overall = 'degraded';
+      else if (errorCount > 0 || warnCount > 2) overall = 'watch';
+
+      const bullets = [
+        `OpenClaw health summary`,
+        `- Overall status: ${overall.toUpperCase()}`,
+        `- Signals: ${errorCount} error-like, ${warnCount} warning-like, ${wsEvents} websocket events`,
+        `- Churn indicators (connect/restart-ish events): ${restartHints}`,
+      ];
+
+      if (overall === 'stable') {
+        bullets.push('- Plain-language read: service activity looks normal in this window.');
+      } else if (overall === 'watch') {
+        bullets.push('- Plain-language read: mostly healthy, but there are warning/error hints worth monitoring.');
+      } else {
+        bullets.push('- Plain-language read: noticeable issues in this window; investigate logs and consider restart.');
+      }
+
+      bullets.push('');
+      bullets.push('Most recent notable lines:');
+      recent.forEach((line, i) => {
+        const clipped = line.length > 170 ? `${line.slice(0, 167)}...` : line;
+        bullets.push(`${i + 1}. ${clipped}`);
+      });
+
+      return bullets.join('\n');
+    }
+
+    function tickCountdown() {
+      secsLeft -= 1;
+      if (secsLeft < 0) {
+        loadData();
+        secsLeft = REFRESH_SECONDS;
+      }
+      document.getElementById('countdown').textContent = `Next refresh: ${secsLeft}s`;
+    }
+
+    function initSpotifyWidget() {
+      const widget = document.getElementById('spotifyWidget');
+      const handle = document.getElementById('spotifyHandle');
+      const minBtn = document.getElementById('spotifyMinBtn');
+      if (!widget || !handle || !minBtn) return;
+
+      const SIZE_KEY = 'spotify_widget_size_v1';
+      const MIN_KEY = 'spotify_widget_minimized_v1';
+
+      let dragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+      let resizeTimer = null;
+
+      try {
+        const raw = localStorage.getItem(SIZE_KEY);
+        if (raw) {
+          const size = JSON.parse(raw);
+          if (size && Number(size.w) > 200 && Number(size.h) > 160) {
+            widget.style.width = `${Math.min(size.w, window.innerWidth - 10)}px`;
+            widget.style.height = `${Math.min(size.h, window.innerHeight - 10)}px`;
+          }
+        }
+      } catch (_) {}
+
+      const isMin = localStorage.getItem(MIN_KEY) === '1';
+      if (isMin) {
+        widget.classList.add('minimized');
+        minBtn.textContent = '>'; 
+      }
+
+      function saveSize() {
+        if (widget.classList.contains('minimized')) return;
+        localStorage.setItem(SIZE_KEY, JSON.stringify({
+          w: widget.offsetWidth,
+          h: widget.offsetHeight,
+        }));
+      }
+
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(saveSize, 180);
+        });
+        ro.observe(widget);
+      }
+
+      function clampPosition(x, y) {
+        const maxX = Math.max(0, window.innerWidth - widget.offsetWidth);
+        const maxY = Math.max(0, window.innerHeight - widget.offsetHeight);
+        return {
+          x: Math.max(0, Math.min(x, maxX)),
+          y: Math.max(0, Math.min(y, maxY)),
+        };
+      }
+
+      handle.addEventListener('mousedown', (e) => {
+        if (widget.classList.contains('minimized')) return;
+        if (e.target === minBtn) return;
+        dragging = true;
+        const rect = widget.getBoundingClientRect();
+        widget.style.right = 'auto';
+        widget.style.bottom = 'auto';
+        widget.style.left = `${rect.left}px`;
+        widget.style.top = `${rect.top}px`;
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const pos = clampPosition(e.clientX - offsetX, e.clientY - offsetY);
+        widget.style.left = `${pos.x}px`;
+        widget.style.top = `${pos.y}px`;
+      });
+
+      window.addEventListener('mouseup', () => {
+        dragging = false;
+      });
+
+      function setMinimized(minimized) {
+        if (minimized) {
+          widget.classList.add('minimized');
+          widget.style.left = '';
+          widget.style.top = '';
+          widget.style.bottom = '';
+          widget.style.right = '0';
+          minBtn.textContent = '>';
+          localStorage.setItem(MIN_KEY, '1');
+        } else {
+          widget.classList.remove('minimized');
+          minBtn.textContent = '_';
+          localStorage.setItem(MIN_KEY, '0');
+        }
+      }
+
+      minBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setMinimized(!widget.classList.contains('minimized'));
+      });
+
+      handle.addEventListener('dblclick', () => {
+        setMinimized(!widget.classList.contains('minimized'));
+      });
+
+      window.addEventListener('resize', () => {
+        if (widget.classList.contains('minimized')) return;
+        const rect = widget.getBoundingClientRect();
+        if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) {
+          const pos = clampPosition(rect.left, rect.top);
+          widget.style.left = `${pos.x}px`;
+          widget.style.top = `${pos.y}px`;
+          widget.style.right = 'auto';
+          widget.style.bottom = 'auto';
+        }
+      });
+    }
+
+    function initSparklyCursorTrail() {
+      const colors = ['#ffffff', '#ffe066', '#ff99c8', '#9bf6ff', '#bdb2ff', '#caffbf'];
+      let lastX = -999;
+      let lastY = -999;
+      let throttle = 0;
+
+      function spawnSparkle(x, y) {
+        const s = document.createElement('span');
+        s.className = 'cursor-sparkle';
+        s.style.left = `${x}px`;
+        s.style.top = `${y}px`;
+        s.style.background = colors[Math.floor(Math.random() * colors.length)];
+        const size = 6 + Math.floor(Math.random() * 9);
+        s.style.width = `${size}px`;
+        s.style.height = `${size}px`;
+        s.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        s.style.boxShadow = `0 0 8px ${s.style.background}, 0 0 16px rgba(255,255,255,0.95)`;
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 700);
+      }
+
+      window.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        const dx = Math.abs(e.clientX - lastX);
+        const dy = Math.abs(e.clientY - lastY);
+        if ((dx + dy) < 6) return;
+        if (now - throttle < 16) return;
+        throttle = now;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        spawnSparkle(e.clientX, e.clientY);
+        if (Math.random() > 0.6) {
+          spawnSparkle(e.clientX + (Math.random() * 16 - 8), e.clientY + (Math.random() * 16 - 8));
+        }
+      }, { passive: true });
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    document.getElementById('loadClaudeHistoryBtn').addEventListener('click', loadClaudeHistory);
+    document.getElementById('loadCodexHistoryBtn').addEventListener('click', loadCodexHistory);
+    document.getElementById('summarizeOpenclawBtn').addEventListener('click', loadOpenclawLogs);
+    document.getElementById('tailOpenclawBtn').addEventListener('click', loadOpenclawLogs);
+    document.getElementById('restartOpenclawBtn').addEventListener('click', restartOpenclaw);
+
+    initSpotifyWidget();
+    initSparklyCursorTrail();
+    loadData();
+    setInterval(tickCountdown, 1000);
+  </script>
+</body>
+</html>

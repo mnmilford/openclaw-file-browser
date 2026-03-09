@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Chat Launcher</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #0ea5a4;
+      --ok-bg: #dcfce7;
+      --ok-tx: #166534;
+      --bad-bg: #fee2e2;
+      --bad-tx: #991b1b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 18px;
+      background: radial-gradient(900px 600px at 0% 0%, #fef3c7, transparent 70%), #f8fafc;
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100dvh;
+    }
+    .wrap { width: min(1050px, 100%); margin: 0 auto; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    h1 { margin: 0; font-size: clamp(24px, 3.2vw, 38px); }
+    .sub { margin: 4px 0 0; color: var(--muted); }
+    a.btn {
+      display: inline-block;
+      text-decoration: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      padding: 9px 13px;
+      font-weight: 600;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    button, a.btn {
+      border: 0;
+      text-decoration: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-block;
+    }
+    a.ghost {
+      background: #0f766e;
+    }
+    .pill {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-weight: 600;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .ok { background: var(--ok-bg); color: var(--ok-tx); }
+    .bad { background: var(--bad-bg); color: var(--bad-tx); }
+    .mono {
+      margin-top: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <h1>Live Chat</h1>
+        <p class="sub">Use OpenClaw UI for real-time chat from the dashboard context.</p>
+      </div>
+      <a class="btn" href="/" rel="noreferrer">Back to dashboard</a>
+    </div>
+    <section class="card">
+      <div id="status" class="pill bad">Checking OpenClaw on :18789...</div>
+      <div class="mono" id="detail">Waiting for probe...</div>
+      <div class="row">
+        <a class="btn" id="openLive" href="http://localhost:18789" target="_blank" rel="noreferrer">Open Live Chat (new tab)</a>
+        <a class="btn ghost" href="http://localhost:18789" rel="noreferrer">Open Live Chat (this tab)</a>
+        <button id="probeBtn" type="button">Re-check connection</button>
+      </div>
+      <div class="mono">
+        Note: OpenClaw sets anti-iframe headers, so live chat cannot be embedded directly inside this page.
+      </div>
+    </section>
+  </main>
+  <script>
+    async function probe() {
+      const statusEl = document.getElementById("status");
+      const detailEl = document.getElementById("detail");
+      statusEl.className = "pill bad";
+      statusEl.textContent = "Checking OpenClaw on :18789...";
+      detailEl.textContent = "Running local probe...";
+      try {
+        const res = await fetch("/api/status", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+        if (d.gateway && d.gateway.reachable) {
+          statusEl.className = "pill ok";
+          statusEl.textContent = `OpenClaw reachable (${d.gateway.code || "ok"})`;
+          detailEl.textContent = `Gateway probe: ${d.gateway.detail}. You can chat live via OpenClaw UI.`;
+        } else {
+          statusEl.className = "pill bad";
+          statusEl.textContent = "OpenClaw not reachable";
+          detailEl.textContent = `Gateway probe failed: ${d.gateway ? d.gateway.detail : "unknown"}`;
+        }
+      } catch (err) {
+        statusEl.className = "pill bad";
+        statusEl.textContent = "Probe failed";
+        detailEl.textContent = `Error: ${err.message}`;
+      }
+    }
+    document.getElementById("probeBtn").addEventListener("click", probe);
+    probe();
+  </script>
+</body>
+</html>
