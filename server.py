@@ -34,9 +34,9 @@ IMAGE_EXTENSIONS = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
 SKIP_NAMES = {".git", "node_modules", "__pycache__", ".openclaw.bak.nested"}
 WATCH_ROOTS = {
     "uploads": {
-        "label": "File uploads",
+        "label": "Browser uploads",
         "path": Path("/root/local-dashboard/uploads"),
-        "description": "Uploaded files via dashboard.",
+        "description": "Files uploaded through the browser UI.",
     },
     "core-state": {
         "label": "Core state",
@@ -49,19 +49,19 @@ WATCH_ROOTS = {
         "description": "Agent workspace, skills, knowledge, scripts, memory.",
     },
     "lil-mike-memory": {
-        "label": "Lil Mike memory",
+        "label": "Research memory",
         "path": Path("/root/.openclaw/workspace/memory/research"),
-        "description": "Research notes, private journals, and topic outputs.",
+        "description": "Research notes, journals, and working topic outputs.",
     },
     "deepfield": {
-        "label": "Deepfield output",
+        "label": "Project output",
         "path": Path("/root/Projects/deepfield-transmissions"),
-        "description": "Published research, Instagram assets, backgrounds.",
+        "description": "Project files, published assets, and generated output.",
     },
     "sessions": {
         "label": "Agent sessions",
         "path": Path("/root/.openclaw/agents/main/sessions"),
-        "description": "Session JSONL transcripts including Lil Mike runs.",
+        "description": "Session JSONL transcripts and agent execution history.",
     },
 }
 FAVORITES = [
@@ -78,19 +78,19 @@ FAVORITES = [
         "kind": "dir",
     },
     {
-        "label": "Lil Mike private journals",
+        "label": "Research journals",
         "root": "lil-mike-memory",
         "path": "private",
         "kind": "dir",
     },
     {
-        "label": "Deepfield research",
+        "label": "Project research",
         "root": "deepfield",
         "path": "research",
         "kind": "dir",
     },
     {
-        "label": "Instagram renders",
+        "label": "Generated assets",
         "root": "deepfield",
         "path": "instagram",
         "kind": "dir",
