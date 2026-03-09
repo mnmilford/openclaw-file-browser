@@ -1139,8 +1139,8 @@
 
     function initializeFloatingWindow() {
       if (isMobileLayout()) return;
-      const width = Math.min(Math.max(window.innerWidth * 0.31, 360), 540);
-      const height = Math.min(window.innerHeight * 0.84, 920);
+      const width = Math.min(500, window.innerWidth - 24);
+      const height = Math.min(500, window.innerHeight - 24);
       applyFloatingWindowRect({
         left: window.innerWidth - width - 12,
         top: 12,
