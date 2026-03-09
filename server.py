@@ -14,15 +14,74 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 
-BASE_DIR = Path("/root/local-dashboard")
+def load_env_file(path):
+    if not path.exists():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def env_path(name, default):
+    value = os.environ.get(name, "").strip()
+    return Path(value).expanduser() if value else Path(default)
+
+
+def env_str(name, default):
+    value = os.environ.get(name, "").strip()
+    return value if value else default
+
+
+def env_int(name, default):
+    value = os.environ.get(name, "").strip()
+    if not value:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
+BASE_DIR = Path(__file__).resolve().parent
+load_env_file(BASE_DIR / ".env")
+load_env_file(BASE_DIR / ".env.local")
 INDEX_PATH = BASE_DIR / "index.html"
 CHAT_PATH = BASE_DIR / "chat.html"
 CHAT_TRANSCRIPT_PATH = BASE_DIR / "chat-transcript.html"
 FILES_PATH = BASE_DIR / "files.html"
+UPLOADS_DIR = env_path("OPENCLAW_FILE_BROWSER_UPLOADS_DIR", str(BASE_DIR / "uploads"))
+OPENCLAW_HOME = env_path("OPENCLAW_HOME_DIR", "/root/.openclaw")
+OPENCLAW_WORKSPACE = env_path("OPENCLAW_WORKSPACE_DIR", str(OPENCLAW_HOME / "workspace"))
+OPENCLAW_RESEARCH_MEMORY = env_path(
+    "OPENCLAW_RESEARCH_MEMORY_DIR",
+    str(OPENCLAW_WORKSPACE / "memory" / "research"),
+)
+OPENCLAW_SESSIONS_DIR = env_path(
+    "OPENCLAW_SESSIONS_DIR",
+    str(OPENCLAW_HOME / "agents" / "main" / "sessions"),
+)
+PROJECT_OUTPUT_DIR = env_path(
+    "OPENCLAW_FILE_BROWSER_PROJECT_DIR",
+    str(BASE_DIR / "project-output"),
+)
+OPENCLAW_SERVICE_NAME = env_str("OPENCLAW_SERVICE_NAME", "openclaw.service")
+DASHBOARD_SERVICE_NAME = env_str(
+    "OPENCLAW_FILE_BROWSER_SERVICE_NAME",
+    "local-dashboard-1455.service",
+)
+GATEWAY_URL = env_str("OPENCLAW_GATEWAY_URL", "http://127.0.0.1:18789")
+HOST = env_str("OPENCLAW_FILE_BROWSER_HOST", "127.0.0.1")
+PORT = env_int("OPENCLAW_FILE_BROWSER_PORT", 1455)
 ALLOWED_ACTIONS = {
-    "restart_openclaw": ["systemctl", "restart", "openclaw.service"],
+    "restart_openclaw": ["systemctl", "restart", OPENCLAW_SERVICE_NAME],
 }
-ALLOWED_LOG_SERVICES = {"openclaw.service", "local-dashboard-1455.service"}
+ALLOWED_LOG_SERVICES = {OPENCLAW_SERVICE_NAME, DASHBOARD_SERVICE_NAME}
 _SPURS_CACHE = {"ts": 0.0, "data": None}
 TEXT_EXTENSIONS = {
     ".c", ".cc", ".cfg", ".conf", ".cpp", ".css", ".csv", ".env", ".gitignore", ".go",
@@ -35,32 +94,32 @@ SKIP_NAMES = {".git", "node_modules", "__pycache__", ".openclaw.bak.nested"}
 WATCH_ROOTS = {
     "uploads": {
         "label": "Browser uploads",
-        "path": Path("/root/local-dashboard/uploads"),
+        "path": UPLOADS_DIR,
         "description": "Files uploaded through the browser UI.",
     },
     "core-state": {
         "label": "Core state",
-        "path": Path("/root/.openclaw"),
+        "path": OPENCLAW_HOME,
         "description": "Main OpenClaw state, config, logs, cron, media.",
     },
     "workspace": {
         "label": "Workspace",
-        "path": Path("/root/.openclaw/workspace"),
+        "path": OPENCLAW_WORKSPACE,
         "description": "Agent workspace, skills, knowledge, scripts, memory.",
     },
     "lil-mike-memory": {
         "label": "Research memory",
-        "path": Path("/root/.openclaw/workspace/memory/research"),
+        "path": OPENCLAW_RESEARCH_MEMORY,
         "description": "Research notes, journals, and working topic outputs.",
     },
     "deepfield": {
         "label": "Project output",
-        "path": Path("/root/Projects/deepfield-transmissions"),
+        "path": PROJECT_OUTPUT_DIR,
         "description": "Project files, published assets, and generated output.",
     },
     "sessions": {
         "label": "Agent sessions",
-        "path": Path("/root/.openclaw/agents/main/sessions"),
+        "path": OPENCLAW_SESSIONS_DIR,
         "description": "Session JSONL transcripts and agent execution history.",
     },
 }
@@ -259,7 +318,7 @@ def safe_int(value, default=0):
 
 def probe_gateway():
     try:
-        req = urllib.request.Request("http://127.0.0.1:18789", method="GET")
+        req = urllib.request.Request(GATEWAY_URL, method="GET")
         with urllib.request.urlopen(req, timeout=2) as resp:
             return {"reachable": True, "code": resp.getcode(), "detail": "ok"}
     except urllib.error.HTTPError as e:
@@ -313,8 +372,8 @@ def get_status():
     swap_used_kb = max(swap_total_kb - swap_free_kb, 0)
     disk = shutil.disk_usage("/")
     gateway = probe_gateway()
-    openclaw = systemd_props("openclaw.service")
-    dashboard = systemd_props("local-dashboard-1455.service")
+    openclaw = systemd_props(OPENCLAW_SERVICE_NAME)
+    dashboard = systemd_props(DASHBOARD_SERVICE_NAME)
     claude = get_claude_status()
     codex = get_codex_status()
     spurs = get_spurs_info()
@@ -986,7 +1045,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/logs":
             q = parse_qs(parsed.query)
-            service_name = q.get("service", ["openclaw.service"])[0]
+            service_name = q.get("service", [OPENCLAW_SERVICE_NAME])[0]
             try:
                 lines = int(q.get("lines", ["80"])[0])
             except ValueError:
@@ -1080,11 +1139,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    host = "127.0.0.1"
-    port = 1455
-    server = ThreadingHTTPServer((host, port), Handler)
+    server = ThreadingHTTPServer((HOST, PORT), Handler)
     server.daemon_threads = True
-    print(f"Serving dashboard on http://{host}:{port}", flush=True)
+    print(f"Serving dashboard on http://{HOST}:{PORT}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

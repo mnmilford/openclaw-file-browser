@@ -20,27 +20,37 @@ It is designed for self-hosted OpenClaw setups where you want a fast read-first 
 
 1. Make sure Python 3.11+ is available.
 2. Review the paths in `WATCH_ROOTS` and `FAVORITES` inside `server.py`.
-3. Create the uploads directory if needed:
+3. Copy the example env file and adjust it for your machine:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Create the uploads directory if needed:
 
 ```bash
 mkdir -p uploads
 ```
 
-4. Start the server:
+5. Start the server:
 
 ```bash
 python3 server.py
 ```
 
-5. Open the served address in your browser and visit `/files`.
+6. Open the served address in your browser and visit `/files`.
 
 ## Configuration
 
-This project is intentionally simple. The main customization point is `server.py`.
+This project is intentionally simple. The main customization point is the environment.
 
-- `WATCH_ROOTS` controls which directories appear in the browser.
-- `FAVORITES` controls the quick links shown in the UI.
-- `ALLOWED_ACTIONS` and `ALLOWED_LOG_SERVICES` control the optional service management endpoints used by the companion dashboard pages.
+- `.env.example` documents the supported environment variables.
+- `server.py` auto-loads `.env` and `.env.local` if present.
+- `OPENCLAW_HOME_DIR`, `OPENCLAW_WORKSPACE_DIR`, `OPENCLAW_RESEARCH_MEMORY_DIR`, and `OPENCLAW_SESSIONS_DIR` control the main OpenClaw watch roots.
+- `OPENCLAW_FILE_BROWSER_UPLOADS_DIR` and `OPENCLAW_FILE_BROWSER_PROJECT_DIR` control browser-local and project-specific roots.
+- `OPENCLAW_SERVICE_NAME`, `OPENCLAW_FILE_BROWSER_SERVICE_NAME`, and `OPENCLAW_GATEWAY_URL` control the optional status and log endpoints used by the companion dashboard pages.
+
+`WATCH_ROOTS` and `FAVORITES` still live in `server.py`, but the default paths now come from environment variables.
 
 If you are publishing or sharing your setup, review those paths and labels first.
 
@@ -49,3 +59,4 @@ If you are publishing or sharing your setup, review those paths and labels first
 - The default configuration assumes an OpenClaw install rooted at `/root/.openclaw`.
 - The repo ignores runtime uploads and Python cache files by default.
 - This is intended for trusted local or self-hosted environments, not an internet-hardened public file manager.
+- The included license is MIT because it is the least-friction choice for a small reusable infrastructure tool.
