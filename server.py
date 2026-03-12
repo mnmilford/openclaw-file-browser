@@ -56,6 +56,19 @@ CHAT_PATH = BASE_DIR / "chat.html"
 CHAT_TRANSCRIPT_PATH = BASE_DIR / "chat-transcript.html"
 FILES_PATH = BASE_DIR / "files.html"
 UPLOADS_DIR = env_path("OPENCLAW_FILE_BROWSER_UPLOADS_DIR", str(BASE_DIR / "uploads"))
+ROOT_HOME_DIR = env_path("OPENCLAW_FILE_BROWSER_HOME_DIR", "/root")
+PROJECTS_DIR = env_path(
+    "OPENCLAW_FILE_BROWSER_PROJECTS_DIR",
+    str(ROOT_HOME_DIR / "Projects"),
+)
+LOCAL_DASHBOARD_DIR = env_path(
+    "OPENCLAW_FILE_BROWSER_DASHBOARD_DIR",
+    str(BASE_DIR),
+)
+OPENCLAW_INSTALL_DIR = env_path(
+    "OPENCLAW_INSTALL_DIR",
+    "/opt/openclaw",
+)
 OPENCLAW_HOME = env_path("OPENCLAW_HOME_DIR", "/root/.openclaw")
 OPENCLAW_WORKSPACE = env_path("OPENCLAW_WORKSPACE_DIR", str(OPENCLAW_HOME / "workspace"))
 OPENCLAW_RESEARCH_MEMORY = env_path(
@@ -68,7 +81,7 @@ OPENCLAW_SESSIONS_DIR = env_path(
 )
 PROJECT_OUTPUT_DIR = env_path(
     "OPENCLAW_FILE_BROWSER_PROJECT_DIR",
-    str(BASE_DIR / "project-output"),
+    str(PROJECTS_DIR / "deepfield-transmissions"),
 )
 OPENCLAW_SERVICE_NAME = env_str("OPENCLAW_SERVICE_NAME", "openclaw.service")
 DASHBOARD_SERVICE_NAME = env_str(
@@ -92,6 +105,11 @@ TEXT_EXTENSIONS = {
 IMAGE_EXTENSIONS = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
 SKIP_NAMES = {".git", "node_modules", "__pycache__", ".openclaw.bak.nested"}
 WATCH_ROOTS = {
+    "root-home": {
+        "label": "Root home",
+        "path": ROOT_HOME_DIR,
+        "description": "Broad droplet browser rooted at /root.",
+    },
     "uploads": {
         "label": "Browser uploads",
         "path": UPLOADS_DIR,
@@ -107,15 +125,30 @@ WATCH_ROOTS = {
         "path": OPENCLAW_WORKSPACE,
         "description": "Agent workspace, skills, knowledge, scripts, memory.",
     },
+    "dashboard": {
+        "label": "Local dashboard",
+        "path": LOCAL_DASHBOARD_DIR,
+        "description": "Dashboard app source, uploads, and local UI assets.",
+    },
+    "projects": {
+        "label": "Projects",
+        "path": PROJECTS_DIR,
+        "description": "Project repositories and non-OpenClaw working trees.",
+    },
     "lil-mike-memory": {
         "label": "Research memory",
         "path": OPENCLAW_RESEARCH_MEMORY,
         "description": "Research notes, journals, and working topic outputs.",
     },
     "deepfield": {
-        "label": "Project output",
+        "label": "Deepfield repo",
         "path": PROJECT_OUTPUT_DIR,
-        "description": "Project files, published assets, and generated output.",
+        "description": "Primary Deepfield project repo and published assets.",
+    },
+    "opt-openclaw": {
+        "label": "OpenClaw install",
+        "path": OPENCLAW_INSTALL_DIR,
+        "description": "Static install data under /opt/openclaw.",
     },
     "sessions": {
         "label": "Agent sessions",
@@ -124,6 +157,12 @@ WATCH_ROOTS = {
     },
 }
 FAVORITES = [
+    {
+        "label": "/root",
+        "root": "root-home",
+        "path": "",
+        "kind": "dir",
+    },
     {
         "label": "OpenClaw config",
         "root": "core-state",
@@ -137,21 +176,45 @@ FAVORITES = [
         "kind": "dir",
     },
     {
+        "label": "Workspace memory",
+        "root": "workspace",
+        "path": "memory",
+        "kind": "dir",
+    },
+    {
         "label": "Research journals",
         "root": "lil-mike-memory",
         "path": "private",
         "kind": "dir",
     },
     {
-        "label": "Project research",
+        "label": "Local dashboard",
+        "root": "dashboard",
+        "path": "",
+        "kind": "dir",
+    },
+    {
+        "label": "Projects",
+        "root": "projects",
+        "path": "",
+        "kind": "dir",
+    },
+    {
+        "label": "Deepfield research",
         "root": "deepfield",
         "path": "research",
         "kind": "dir",
     },
     {
-        "label": "Generated assets",
+        "label": "Deepfield assets",
         "root": "deepfield",
         "path": "instagram",
+        "kind": "dir",
+    },
+    {
+        "label": "OpenClaw install",
+        "root": "opt-openclaw",
+        "path": "",
         "kind": "dir",
     },
 ]

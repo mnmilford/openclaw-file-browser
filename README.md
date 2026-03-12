@@ -1,10 +1,10 @@
 # OpenClaw File Browser
 
-OpenClaw File Browser is a lightweight local web app for browsing OpenClaw state, workspace files, session transcripts, and uploads from a single page.
+OpenClaw File Browser is a lightweight local web app for browsing the droplet filesystem around an OpenClaw install, including `/root`, OpenClaw state, project repos, session transcripts, and uploads from a single page.
 
 It is designed for self-hosted OpenClaw setups where you want a fast read-first file browser with:
 
-- multiple watch roots
+- a broad `/root` home view plus focused watch roots
 - favorites for common folders
 - text and image preview
 - a floating image window
@@ -46,8 +46,9 @@ This project is intentionally simple. The main customization point is the enviro
 
 - `.env.example` documents the supported environment variables.
 - `server.py` auto-loads `.env` and `.env.local` if present.
+- `OPENCLAW_FILE_BROWSER_HOME_DIR` controls the broad home root shown first in the UI.
 - `OPENCLAW_HOME_DIR`, `OPENCLAW_WORKSPACE_DIR`, `OPENCLAW_RESEARCH_MEMORY_DIR`, and `OPENCLAW_SESSIONS_DIR` control the main OpenClaw watch roots.
-- `OPENCLAW_FILE_BROWSER_UPLOADS_DIR` and `OPENCLAW_FILE_BROWSER_PROJECT_DIR` control browser-local and project-specific roots.
+- `OPENCLAW_FILE_BROWSER_UPLOADS_DIR`, `OPENCLAW_FILE_BROWSER_PROJECTS_DIR`, `OPENCLAW_FILE_BROWSER_DASHBOARD_DIR`, `OPENCLAW_FILE_BROWSER_PROJECT_DIR`, and `OPENCLAW_INSTALL_DIR` control the browser-local and project/install roots.
 - `OPENCLAW_SERVICE_NAME`, `OPENCLAW_FILE_BROWSER_SERVICE_NAME`, and `OPENCLAW_GATEWAY_URL` control the optional status and log endpoints used by the companion dashboard pages.
 
 `WATCH_ROOTS` and `FAVORITES` still live in `server.py`, but the default paths now come from environment variables.
@@ -56,7 +57,7 @@ If you are publishing or sharing your setup, review those paths and labels first
 
 ## Notes
 
-- The default configuration assumes an OpenClaw install rooted at `/root/.openclaw`.
+- The default configuration assumes a droplet centered on `/root` with OpenClaw state under `/root/.openclaw`.
 - The repo ignores runtime uploads and Python cache files by default.
 - This is intended for trusted local or self-hosted environments, not an internet-hardened public file manager.
 - The included license is MIT because it is the least-friction choice for a small reusable infrastructure tool.
