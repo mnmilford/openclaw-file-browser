@@ -104,6 +104,8 @@ TEXT_EXTENSIONS = {
 }
 IMAGE_EXTENSIONS = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
 SKIP_NAMES = {".git", "node_modules", "__pycache__", ".openclaw.bak.nested"}
+FILE_LIST_LIMIT = 250
+MAP_ROOT_ID = "root-home"
 WATCH_ROOTS = {
     "root-home": {
         "label": "Root home",
@@ -619,6 +621,50 @@ def get_watch_roots():
     return {"roots": roots, "favorites": FAVORITES}
 
 
+def _directory_has_visible_children(path_obj):
+    try:
+        for child in path_obj.iterdir():
+            if child.name in SKIP_NAMES:
+                continue
+            return True
+    except OSError:
+        return False
+    return False
+
+
+def _list_directory_entries(root_id, target):
+    entries = []
+    truncated = False
+    root_path = _safe_root(root_id).resolve()
+    try:
+        for child in sorted(target.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
+            if child.name in SKIP_NAMES:
+                continue
+            try:
+                stat = child.stat()
+            except OSError:
+                continue
+            rel_child = child.relative_to(root_path)
+            is_dir = child.is_dir()
+            entries.append(
+                {
+                    "name": child.name,
+                    "path": str(rel_child),
+                    "is_dir": is_dir,
+                    "size": 0 if is_dir else stat.st_size,
+                    "mtime": _iso_mtime(stat.st_mtime),
+                    "kind": "dir" if is_dir else _guess_kind(child),
+                    "has_children": _directory_has_visible_children(child) if is_dir else False,
+                }
+            )
+            if len(entries) >= FILE_LIST_LIMIT:
+                truncated = True
+                break
+    except OSError as e:
+        return None, False, str(e)
+    return entries, truncated, ""
+
+
 def list_files(root_id, rel_path=""):
     try:
         target = _resolve_within(root_id, rel_path)
@@ -629,28 +675,9 @@ def list_files(root_id, rel_path=""):
     if not target.is_dir():
         return {"ok": False, "message": "Path is not a directory", "entries": []}
 
-    entries = []
-    try:
-        for child in sorted(target.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
-            if child.name in SKIP_NAMES:
-                continue
-            try:
-                stat = child.stat()
-            except OSError:
-                continue
-            rel_child = child.relative_to(_safe_root(root_id).resolve())
-            entries.append(
-                {
-                    "name": child.name,
-                    "path": str(rel_child),
-                    "is_dir": child.is_dir(),
-                    "size": 0 if child.is_dir() else stat.st_size,
-                    "mtime": _iso_mtime(stat.st_mtime),
-                    "kind": "dir" if child.is_dir() else _guess_kind(child),
-                }
-            )
-    except OSError as e:
-        return {"ok": False, "message": str(e), "entries": []}
+    entries, truncated, error = _list_directory_entries(root_id, target)
+    if entries is None:
+        return {"ok": False, "message": error, "entries": []}
 
     parent = ""
     if rel_path:
@@ -664,7 +691,42 @@ def list_files(root_id, rel_path=""):
         "path": rel_path,
         "absolute_path": str(target),
         "parent": parent,
-        "entries": entries[:250],
+        "entries": entries,
+        "truncated": truncated,
+    }
+
+
+def get_tree_branch(root_id, rel_path=""):
+    if root_id != MAP_ROOT_ID:
+        return {"ok": False, "message": "Map view is only available for /root", "entries": []}
+    try:
+        target = _resolve_within(root_id, rel_path)
+    except Exception:
+        return {"ok": False, "message": "Invalid path", "entries": []}
+    if not target.exists():
+        return {"ok": False, "message": "Path not found", "entries": []}
+    if not target.is_dir():
+        return {"ok": False, "message": "Path is not a directory", "entries": []}
+
+    entries, truncated, error = _list_directory_entries(root_id, target)
+    if entries is None:
+        return {"ok": False, "message": error, "entries": []}
+
+    parent = ""
+    if rel_path:
+        parent = str(Path(rel_path).parent)
+        if parent == ".":
+            parent = ""
+
+    return {
+        "ok": True,
+        "message": "ok",
+        "root": root_id,
+        "path": rel_path,
+        "absolute_path": str(target),
+        "parent": parent,
+        "entries": entries,
+        "truncated": truncated,
     }
 
 
@@ -1041,6 +1103,12 @@ class Handler(BaseHTTPRequestHandler):
             root_id = q.get("root", ["workspace"])[0]
             rel_path = q.get("path", [""])[0]
             self._send_json(list_files(root_id, rel_path))
+            return
+        if parsed.path == "/api/files/tree":
+            q = parse_qs(parsed.query)
+            root_id = q.get("root", [MAP_ROOT_ID])[0]
+            rel_path = q.get("path", [""])[0]
+            self._send_json(get_tree_branch(root_id, rel_path))
             return
         if parsed.path == "/api/files/file":
             q = parse_qs(parsed.query)

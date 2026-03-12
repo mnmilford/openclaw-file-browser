@@ -903,6 +903,253 @@
       line-height: 1.5;
       word-break: break-word;
     }
+    .map-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 45;
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 18%, transparent), transparent 28%),
+        color-mix(in srgb, var(--bg) 90%, rgba(7, 9, 12, 0.92));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .map-overlay.is-open {
+      display: block;
+    }
+    .map-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      height: 100%;
+    }
+    .map-main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+    }
+    .map-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 22px;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--panel) 74%, transparent);
+    }
+    .map-head h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+    .map-head-copy {
+      min-width: 0;
+      flex: 1;
+    }
+    .map-head-copy .sub {
+      margin-top: 6px;
+    }
+    .map-head-path {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      word-break: break-word;
+    }
+    .map-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .map-stage-wrap {
+      position: relative;
+      min-height: 0;
+      flex: 1;
+      padding: 16px 18px 18px;
+    }
+    .map-stage {
+      position: relative;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background:
+        linear-gradient(color-mix(in srgb, var(--panel-2) 82%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--panel-2) 82%, transparent) 1px, transparent 1px),
+        color-mix(in srgb, var(--panel) 88%, transparent);
+      background-size: 28px 28px, 28px 28px, auto;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 28%, transparent);
+      touch-action: none;
+      user-select: none;
+    }
+    .map-stage.is-dragging {
+      cursor: grabbing;
+    }
+    .map-empty,
+    .map-hud {
+      position: absolute;
+      left: 18px;
+      z-index: 2;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      box-shadow: 0 10px 24px -18px var(--shadow);
+    }
+    .map-empty {
+      top: 18px;
+      max-width: min(520px, calc(100% - 36px));
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .map-hud {
+      bottom: 18px;
+    }
+    .map-scene {
+      position: absolute;
+      inset: 0 auto auto 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+    .map-lines {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .map-node-layer {
+      position: absolute;
+      inset: 0;
+    }
+    .map-edge {
+      fill: none;
+      stroke: color-mix(in srgb, var(--accent) 52%, var(--line));
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.72;
+    }
+    .map-node {
+      position: absolute;
+      width: 184px;
+      min-height: 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      box-shadow: 0 22px 30px -28px var(--shadow);
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+    .map-node:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+      box-shadow: 0 24px 30px -24px var(--shadow);
+    }
+    .map-node.is-folder {
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--panel) 90%), color-mix(in srgb, var(--panel) 94%, transparent));
+    }
+    .map-node.is-file {
+      width: 168px;
+      min-height: 58px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--accent-2) 10%, var(--panel) 90%), color-mix(in srgb, var(--panel) 94%, transparent));
+    }
+    .map-node.is-selected {
+      border-color: color-mix(in srgb, var(--accent) 82%, white 12%);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 26%, transparent), 0 24px 30px -24px var(--shadow);
+    }
+    .map-node-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .map-node-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .map-node-meta {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .map-node-toggle {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .map-inspector {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+      overflow: auto;
+      background: color-mix(in srgb, var(--panel) 78%, transparent);
+    }
+    .map-inspector .section {
+      padding: 0;
+      margin: 0;
+    }
+    .map-card {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      box-shadow: 0 18px 26px -28px var(--shadow);
+    }
+    .map-card h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .map-card .sub {
+      margin: 8px 0 0;
+    }
+    .map-inspector-path {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .map-inspector-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .map-inspector-grid strong {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .map-inspector-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .map-inspector-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
     pre {
       margin: 16px 0 0;
       padding: 12px;
@@ -920,6 +1167,124 @@
     [data-theme="dark"] pre {
       background: #1e1e1e;
       color: #e8e8e8;
+    }
+
+    .markdown-preview {
+      margin-top: 16px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+    .markdown-preview > :first-child {
+      margin-top: 0;
+    }
+    .markdown-preview > :last-child {
+      margin-bottom: 0;
+    }
+    .markdown-preview h1,
+    .markdown-preview h2,
+    .markdown-preview h3,
+    .markdown-preview h4,
+    .markdown-preview h5,
+    .markdown-preview h6 {
+      margin: 1.2em 0 0.55em;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+    .markdown-preview h1 {
+      font-size: 1.7rem;
+    }
+    .markdown-preview h2 {
+      font-size: 1.35rem;
+      padding-bottom: 0.2em;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+    }
+    .markdown-preview h3 {
+      font-size: 1.15rem;
+    }
+    .markdown-preview p,
+    .markdown-preview ul,
+    .markdown-preview ol,
+    .markdown-preview blockquote,
+    .markdown-preview .markdown-table-wrap {
+      margin: 0 0 1em;
+    }
+    .markdown-preview ul,
+    .markdown-preview ol {
+      padding-left: 1.4em;
+    }
+    .markdown-preview li + li {
+      margin-top: 0.32em;
+    }
+    .markdown-preview blockquote {
+      padding: 0.1em 0 0.1em 1em;
+      border-left: 3px solid var(--accent);
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel-2) 72%, transparent);
+      border-radius: 0 10px 10px 0;
+    }
+    .markdown-preview hr {
+      border: 0;
+      border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      margin: 1.3em 0;
+    }
+    .markdown-preview a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 0.18em;
+    }
+    .markdown-preview code {
+      font-family: 'Menlo', 'Monaco', monospace;
+      font-size: 0.92em;
+      background: color-mix(in srgb, var(--panel-2) 86%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+      border-radius: 6px;
+      padding: 0.1em 0.35em;
+    }
+    .markdown-preview pre {
+      margin-top: 0;
+    }
+    .markdown-preview pre code {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      font-size: inherit;
+    }
+    .markdown-preview table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font-size: 0.95rem;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+    }
+    .markdown-preview th,
+    .markdown-preview td {
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    }
+    .markdown-preview th {
+      font-weight: 700;
+      background: color-mix(in srgb, var(--panel-2) 82%, transparent);
+    }
+    .markdown-preview tr:last-child td {
+      border-bottom: 0;
+    }
+    .markdown-preview .markdown-table-wrap {
+      overflow-x: auto;
+    }
+    .markdown-preview .md-check {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 0.5em;
+    }
+    .markdown-preview .md-check input {
+      margin-top: 0.2em;
+      accent-color: var(--accent);
     }
 
     img {
@@ -1051,8 +1416,8 @@
     #editStatus.ok { color: var(--good); }
     #editStatus.err { color: #b83232; }
 
+    /* ---- Tablet breakpoint ---- */
     @media (max-width: 1180px) {
-      :root {
       .shell {
         grid-template-columns: minmax(250px, 0.78fr) minmax(0, 1.35fr) minmax(320px, 0.95fr);
       }
@@ -1060,79 +1425,349 @@
         width: clamp(320px, 34vw, 460px);
       }
     }
+
+    /* ---- Mobile breakpoint ---- */
     @media (max-width: 780px) {
-      body { padding-bottom: 18px; }
-      .shell {
-        grid-template-columns: 1fr;
-        margin: 8px;
-        width: auto;
+      :root {
+        --mobile-nav-height: 62px;
       }
+
+      body {
+        padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 8px);
+      }
+
+      /* --- Bottom nav bar --- */
       .mobile-nav {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        position: sticky;
-        top: 8px;
-        z-index: 5;
+        grid-template-columns: repeat(4, 1fr);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+        margin: 0;
+        border-radius: 0;
+        background: color-mix(in srgb, var(--panel) 94%, transparent);
+        border: none;
+        border-top: 1px solid var(--line);
+        box-shadow: 0 -4px 20px -10px var(--shadow);
+        backdrop-filter: blur(14px) saturate(120%);
+        -webkit-backdrop-filter: blur(14px) saturate(120%);
+        gap: 4px;
       }
-      .panel {
-        min-height: auto;
-        border-radius: 16px;
-      }
-      .floating-image-window {
-        position: static;
-        top: auto;
-        right: auto;
-        left: auto !important;
-        width: auto !important;
-        height: auto !important;
-        min-width: 0;
-        min-height: auto;
-        margin: 0 8px 8px;
-        z-index: auto;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-      }
-      .floating-window-head {
-        cursor: default;
-        touch-action: auto;
-      }
-      .resize-handle {
-        display: none;
-      }
-      .head {
-        padding: 16px 16px 12px;
-      }
-      .toolbar {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-      button, .btn {
-        text-align: center;
+
+      .mobile-nav button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 6px 4px 4px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 8px;
+        min-height: 44px;
         justify-content: center;
       }
+
+      .mobile-nav button::before {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .mobile-nav button[data-panel="roots"]::before { content: "📂"; }
+      .mobile-nav button[data-panel="browse"]::before { content: "🗂"; }
+      .mobile-nav button[data-panel="recent"]::before { content: "🕐"; }
+      .mobile-nav button[data-panel="preview"]::before { content: "👁"; }
+
+      .mobile-nav button::after {
+        display: none;
+      }
+
+      /* --- Main grid single column --- */
+      .shell {
+        grid-template-columns: 1fr;
+        margin: 0;
+        width: 100%;
+        gap: 0;
+      }
+
+      /* --- Panels fill viewport --- */
+      .panel {
+        min-height: calc(100dvh - var(--mobile-nav-height) - env(safe-area-inset-bottom, 0px));
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        box-shadow: none;
+      }
+
+      .panel::after {
+        display: none;
+      }
+
+      .panel + .panel {
+        border-top: none;
+      }
+
+      /* --- Header compact --- */
+      .head {
+        padding: 14px 16px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      .head > div:first-child {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .sub {
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      /* --- Theme controls compact --- */
+      .theme-controls {
+        justify-content: flex-start;
+        gap: 8px;
+      }
+
+      .theme-select {
+        font-size: 12px;
+      }
+
+      .theme-select select {
+        min-width: 130px;
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+
+      #themeToggleBtn {
+        min-width: 44px;
+        min-height: 44px;
+      }
+      #openMapBtn {
+        order: 2;
+      }
+
+      /* --- Search & toolbar --- */
+      .toolbar {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .toolbar input[type="text"] {
+        width: 100%;
+        font-size: 16px; /* prevents iOS zoom on focus */
+      }
+
+      .toolbar button,
+      .toolbar .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        min-height: 44px;
+      }
+
+      /* Browse panel toolbar: 2-col for upload/new buttons */
+      .browse-panel .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .browse-panel .toolbar span {
+        grid-column: 1 / -1;
+      }
+
+      /* --- Buttons: bigger touch targets --- */
+      button, .btn {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      /* --- File entries: bigger touch targets --- */
+      .entry {
+        padding: 14px 12px;
+        grid-template-columns: 1fr;
+        min-height: 48px;
+        gap: 6px;
+      }
+
+      .entry .name {
+        font-size: 14px;
+      }
+
+      .entry .badge {
+        display: none;
+      }
+
+      /* --- Rows --- */
+      .row {
+        padding: 12px;
+      }
+
+      .row .title {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      /* --- Cards --- */
+      .card {
+        padding: 14px;
+      }
+
+      .card .label {
+        font-size: 16px;
+      }
+
+      /* --- Breadcrumbs: horizontal scroll --- */
+      .crumbs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+      }
+
+      .crumbs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .crumb {
+        white-space: nowrap;
+        scroll-snap-align: start;
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 13px;
+      }
+
+      /* --- Lists/tree/preview spacing --- */
       .list, .tree, .preview {
         padding-left: 14px;
         padding-right: 14px;
       }
+
       .section {
         padding-left: 14px;
         padding-right: 14px;
       }
-      .entry {
+
+      /* --- Preview: images inline, no floating window --- */
+      .floating-image-window {
+        display: none !important;
+      }
+      .map-shell {
         grid-template-columns: 1fr;
       }
-      .row .title {
-        align-items: flex-start;
+      .map-main {
+        border-right: none;
+      }
+      .map-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .map-actions {
+        justify-content: stretch;
+      }
+      .map-actions button {
+        width: 100%;
+      }
+      .map-stage-wrap {
+        padding: 10px 12px 12px;
+        min-height: min(62dvh, 560px);
+      }
+      .map-stage {
+        border-radius: 14px;
+      }
+      .map-inspector {
+        border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+        padding-top: 14px;
+      }
+      .map-inspector-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .preview img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        touch-action: pinch-zoom;
+      }
+
+      .preview pre {
+        font-size: 12px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      /* --- Mobile back button (injected by JS) --- */
+      .mobile-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--accent);
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        min-height: 40px;
+      }
+
+      .mobile-back-btn::after {
+        display: none;
+      }
+
+      /* --- Modal: full screen on mobile --- */
+      .modal-overlay {
+        padding: 0;
+        align-items: stretch;
+      }
+
+      .modal-box {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        min-height: 100dvh;
+      }
+
+      .modal-body textarea {
+        height: 40vh;
+      }
+
+      /* --- Edit mode --- */
+      .preview-edit-area {
+        min-height: 35vh;
+        font-size: 12px;
+      }
+
+      .edit-controls {
         flex-direction: column;
       }
-      .crumbs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding-bottom: 4px;
+
+      .edit-controls button {
+        width: 100%;
       }
-      .crumb {
-        white-space: nowrap;
-      }
+
+      /* --- Panel show/hide --- */
       body[data-mobile-panel="roots"] .panel.browse-panel,
       body[data-mobile-panel="roots"] .panel.preview-panel,
       body[data-mobile-panel="browse"] .panel.roots-panel,
@@ -1143,13 +1778,31 @@
       body[data-mobile-panel="preview"] .panel.browse-panel {
         display: none;
       }
+
       body[data-mobile-panel="recent"] #previewBlock,
       body[data-mobile-panel="preview"] #recentBlock {
         display: none;
       }
+
       body[data-mobile-panel="recent"] .panel.preview-panel,
       body[data-mobile-panel="preview"] .panel.preview-panel {
         display: flex;
+      }
+
+      /* --- Lil Mike theme: reduce animation overhead --- */
+      .theme-scene__sprite {
+        will-change: auto;
+        width: 80px;
+      }
+
+      .theme-scene__sprite::after {
+        display: none;
+      }
+
+      .theme-scene__stars,
+      .theme-scene__stars::before,
+      .theme-scene__stars::after {
+        animation-duration: 60s;
       }
     }
   </style>
@@ -1188,6 +1841,7 @@
         <p class="sub">Read-only browser for OpenClaw state, workspace files, sessions, and uploads.</p>
         <div class="toolbar">
           <input type="text" id="searchInput" placeholder="🔍 Search files..." style="flex:1;" />
+          <button id="openMapBtn" type="button" class="secondary">Map View</button>
           <button id="refreshAllBtn" type="button">Refresh feed</button>
         </div>
       </div>
@@ -1272,6 +1926,68 @@
     <div class="resize-handle" data-resize="sw"></div>
   </section>
 
+  <section class="map-overlay" id="mapOverlay" aria-hidden="true">
+    <div class="map-shell">
+      <div class="map-main">
+        <div class="map-head">
+          <div class="map-head-copy">
+            <h2>/root map</h2>
+            <p class="sub">Drag to pan, wheel or pinch to zoom, click folders to expand, click files to inspect.</p>
+            <div class="map-head-path" id="mapHeadPath">/root</div>
+          </div>
+          <div class="map-actions">
+            <button type="button" class="secondary" id="mapResetBtn">Reset View</button>
+            <button type="button" class="secondary" id="mapOpenSelectionBtn" disabled>Open in Browser</button>
+            <button type="button" id="mapCloseBtn">Close</button>
+          </div>
+        </div>
+        <div class="map-stage-wrap">
+          <div class="map-stage" id="mapStage">
+            <div class="map-empty" id="mapEmptyState">Loading /root…</div>
+            <div class="map-hud" id="mapHud">0 nodes visible</div>
+            <div class="map-scene" id="mapScene">
+              <svg class="map-lines" id="mapLines" aria-hidden="true"></svg>
+              <div class="map-node-layer" id="mapNodeLayer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="map-inspector">
+        <div class="section">
+          <h2>Selected Node</h2>
+        </div>
+        <div class="map-card">
+          <h3 id="mapInspectorTitle">/root</h3>
+          <p class="sub" id="mapInspectorSubtitle">Folder</p>
+          <div class="map-inspector-path" id="mapInspectorPath">/root</div>
+          <div class="map-inspector-grid">
+            <div>
+              <strong>Type</strong>
+              <span id="mapInspectorType">Directory</span>
+            </div>
+            <div>
+              <strong>Children</strong>
+              <span id="mapInspectorChildren">Not loaded</span>
+            </div>
+            <div>
+              <strong>Size</strong>
+              <span id="mapInspectorSize">-</span>
+            </div>
+            <div>
+              <strong>Modified</strong>
+              <span id="mapInspectorMtime">-</span>
+            </div>
+          </div>
+          <div class="map-inspector-actions">
+            <button type="button" class="secondary" id="mapToggleNodeBtn">Expand Folder</button>
+            <button type="button" id="mapInspectorOpenBtn" disabled>Open in Browser</button>
+          </div>
+          <div class="map-inspector-note" id="mapInspectorNote">Only visible `/root` descendants are loaded on demand.</div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
   <!-- New .md file modal -->
   <div id="mdModal" class="modal-overlay" style="display:none">
     <div class="modal-box">
@@ -1334,6 +2050,9 @@
       mobilePanel: "roots",
     };
 
+    const mobilePanelOrder = ["roots", "browse", "recent", "preview"];
+    let mobileNavHistory = "browse";
+
     const rootsEl = document.getElementById("roots");
     const favoritesEl = document.getElementById("favorites");
     const treeEl = document.getElementById("tree");
@@ -1352,12 +2071,51 @@
     const floatingWindowSubtitleEl = document.getElementById("floatingWindowSubtitle");
     const floatingImageStageEl = document.getElementById("floatingImageStage");
     const floatingImageMetaEl = document.getElementById("floatingImageMeta");
+    const openMapBtn = document.getElementById("openMapBtn");
+    const mapOverlayEl = document.getElementById("mapOverlay");
+    const mapStageEl = document.getElementById("mapStage");
+    const mapSceneEl = document.getElementById("mapScene");
+    const mapLinesEl = document.getElementById("mapLines");
+    const mapNodeLayerEl = document.getElementById("mapNodeLayer");
+    const mapEmptyStateEl = document.getElementById("mapEmptyState");
+    const mapHudEl = document.getElementById("mapHud");
+    const mapHeadPathEl = document.getElementById("mapHeadPath");
+    const mapInspectorTitleEl = document.getElementById("mapInspectorTitle");
+    const mapInspectorSubtitleEl = document.getElementById("mapInspectorSubtitle");
+    const mapInspectorPathEl = document.getElementById("mapInspectorPath");
+    const mapInspectorTypeEl = document.getElementById("mapInspectorType");
+    const mapInspectorChildrenEl = document.getElementById("mapInspectorChildren");
+    const mapInspectorSizeEl = document.getElementById("mapInspectorSize");
+    const mapInspectorMtimeEl = document.getElementById("mapInspectorMtime");
+    const mapInspectorNoteEl = document.getElementById("mapInspectorNote");
+    const mapToggleNodeBtn = document.getElementById("mapToggleNodeBtn");
+    const mapOpenSelectionBtn = document.getElementById("mapOpenSelectionBtn");
+    const mapInspectorOpenBtn = document.getElementById("mapInspectorOpenBtn");
     const mobileLayoutQuery = window.matchMedia("(max-width: 780px)");
     const floatingWindowState = {
       minimized: false,
       rect: null,
       interaction: null,
       open: false,
+    };
+    const mapRootId = "root-home";
+    const mapState = {
+      open: false,
+      rootLabel: "/root",
+      rootDescription: "Broad droplet browser rooted at /root.",
+      nodes: new Map(),
+      children: new Map(),
+      expanded: new Set([""]),
+      selectedPath: "",
+      loading: new Set(),
+      pendingFit: false,
+      layout: new Map(),
+      sceneSize: { width: 0, height: 0, visibleCount: 0 },
+      viewport: { x: 24, y: 24, scale: 1 },
+      drag: null,
+      touches: new Map(),
+      pinch: null,
+      errorMessage: "",
     };
 
     function isMobileLayout() {
@@ -1482,12 +2240,28 @@
       applyFloatingWindowRect(nextRect);
     }
 
+    const mobileScrollPositions = {};
+
     function setMobilePanel(panel) {
+      // Save scroll position for current panel
+      if (isMobileLayout() && state.mobilePanel) {
+        mobileScrollPositions[state.mobilePanel] = window.scrollY;
+      }
+      // Track where we came from (for back button)
+      if (state.mobilePanel && state.mobilePanel !== panel) {
+        mobileNavHistory = state.mobilePanel;
+      }
       state.mobilePanel = panel;
       document.body.dataset.mobilePanel = panel;
       mobileNavEl.querySelectorAll("button").forEach(button => {
         button.classList.toggle("is-active", button.dataset.panel === panel);
       });
+      // Restore scroll position
+      if (isMobileLayout()) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, mobileScrollPositions[panel] || 0);
+        });
+      }
     }
 
     function esc(text) {
@@ -1510,11 +2284,561 @@
       return `${value.toFixed(value >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
     }
 
+    function parentPathOf(path) {
+      if (!path) return "";
+      const idx = path.lastIndexOf("/");
+      return idx === -1 ? "" : path.slice(0, idx);
+    }
+
+    function labelForMapPath(path) {
+      if (!path) return mapState.rootLabel;
+      const bits = path.split("/").filter(Boolean);
+      return bits[bits.length - 1] || mapState.rootLabel;
+    }
+
+    function absoluteMapPath(path) {
+      if (!path) return mapState.rootLabel;
+      return `${mapState.rootLabel.replace(/\/$/, "")}/${path}`;
+    }
+
+    function isMarkdownFile(name) {
+      return /\.(md|markdown)$/i.test(name || "");
+    }
+
+    function sanitizeUrl(url) {
+      const value = String(url || "").trim();
+      if (!value) return "";
+      if (/^(javascript|data|vbscript):/i.test(value)) return "";
+      return value;
+    }
+
+    function renderInlineMarkdown(text) {
+      const placeholders = [];
+      const stash = (html) => {
+        const token = `\u0000${placeholders.length}\u0000`;
+        placeholders.push(html);
+        return token;
+      };
+
+      let value = String(text || "");
+      value = value.replace(/`([^`\n]+)`/g, (_, code) => stash(`<code>${esc(code)}</code>`));
+      value = value.replace(/\[([^\]]+)\]\(([^)\s]+(?:\s+"[^"]*")?)\)/g, (match, label, target) => {
+        const parts = String(target).match(/^(\S+)(?:\s+"([^"]*)")?$/);
+        const href = sanitizeUrl(parts ? parts[1] : "");
+        const title = parts && parts[2] ? parts[2] : "";
+        if (!href) return stash(esc(match));
+        const titleAttr = title ? ` title="${esc(title)}"` : "";
+        return stash(`<a href="${esc(href)}"${titleAttr} target="_blank" rel="noreferrer noopener">${esc(label)}</a>`);
+      });
+
+      let html = esc(value);
+      html = html.replace(/~~(?=\S)([\s\S]*?\S)~~/g, "<del>$1</del>");
+      html = html.replace(/(\*\*|__)(?=\S)([\s\S]*?\S)\1/g, "<strong>$2</strong>");
+      html = html.replace(/(\*|_)(?=\S)([\s\S]*?\S)\1/g, "<em>$2</em>");
+      return html.replace(/\u0000(\d+)\u0000/g, (_, idx) => placeholders[Number(idx)] || "");
+    }
+
+    function renderMarkdownListItem(text) {
+      const checkboxMatch = String(text || "").match(/^\[( |x|X)\]\s+(.*)$/);
+      if (!checkboxMatch) return renderInlineMarkdown(text);
+      const checked = checkboxMatch[1].toLowerCase() === "x";
+      return `<span class="md-check"><input type="checkbox" disabled${checked ? " checked" : ""} /><span>${renderInlineMarkdown(checkboxMatch[2])}</span></span>`;
+    }
+
+    function isHorizontalRule(line) {
+      return /^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line);
+    }
+
+    function isListLine(line) {
+      return /^\s*([-+*]|\d+\.)\s+/.test(line);
+    }
+
+    function splitMarkdownTableRow(line) {
+      let value = String(line || "").trim();
+      if (value.startsWith("|")) value = value.slice(1);
+      if (value.endsWith("|")) value = value.slice(0, -1);
+      return value.split("|").map(cell => cell.trim());
+    }
+
+    function isMarkdownTableSeparator(line) {
+      return /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/.test(line);
+    }
+
+    function maybeRenderMarkdownTable(lines, startIndex) {
+      if (startIndex + 1 >= lines.length) return null;
+      if (!lines[startIndex].includes("|") || !isMarkdownTableSeparator(lines[startIndex + 1])) return null;
+
+      const headers = splitMarkdownTableRow(lines[startIndex]);
+      if (!headers.length) return null;
+
+      let i = startIndex + 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim() && lines[i].includes("|")) {
+        rows.push(splitMarkdownTableRow(lines[i]));
+        i += 1;
+      }
+
+      const headHtml = headers.map(cell => `<th>${renderInlineMarkdown(cell)}</th>`).join("");
+      const bodyHtml = rows.map(row => {
+        const padded = headers.map((_, idx) => row[idx] || "");
+        return `<tr>${padded.map(cell => `<td>${renderInlineMarkdown(cell)}</td>`).join("")}</tr>`;
+      }).join("");
+
+      return {
+        html: `<div class="markdown-table-wrap"><table><thead><tr>${headHtml}</tr></thead>${bodyHtml ? `<tbody>${bodyHtml}</tbody>` : ""}</table></div>`,
+        nextIndex: i,
+      };
+    }
+
+    function isMarkdownBlockBoundary(lines, index) {
+      const line = lines[index];
+      if (!line || !line.trim()) return true;
+      if (/^(```|~~~)/.test(line)) return true;
+      if (/^(#{1,6})\s+/.test(line)) return true;
+      if (/^\s*>\s?/.test(line)) return true;
+      if (isHorizontalRule(line)) return true;
+      if (isListLine(line)) return true;
+      return !!maybeRenderMarkdownTable(lines, index);
+    }
+
+    function renderMarkdownList(lines, startIndex) {
+      const ordered = /^\s*\d+\.\s+/.test(lines[startIndex]);
+      const tag = ordered ? "ol" : "ul";
+      const items = [];
+      let i = startIndex;
+
+      while (i < lines.length) {
+        if (!lines[i].trim()) {
+          i += 1;
+          break;
+        }
+        const match = ordered
+          ? lines[i].match(/^\s*\d+\.\s+(.*)$/)
+          : lines[i].match(/^\s*[-+*]\s+(.*)$/);
+        if (match) {
+          items.push(match[1].trim());
+          i += 1;
+          continue;
+        }
+        if (items.length && /^\s{2,}\S/.test(lines[i])) {
+          items[items.length - 1] = `${items[items.length - 1]} ${lines[i].trim()}`;
+          i += 1;
+          continue;
+        }
+        break;
+      }
+
+      return {
+        html: `<${tag}>${items.map(item => `<li>${renderMarkdownListItem(item)}</li>`).join("")}</${tag}>`,
+        nextIndex: i,
+      };
+    }
+
+    function renderMarkdownPreview(source) {
+      const lines = String(source || "").replace(/\r\n?/g, "\n").split("\n");
+      const blocks = [];
+      let i = 0;
+
+      while (i < lines.length) {
+        const line = lines[i];
+        if (!line.trim()) {
+          i += 1;
+          continue;
+        }
+
+        const fenceMatch = line.match(/^(```|~~~)\s*([A-Za-z0-9_-]+)?\s*$/);
+        if (fenceMatch) {
+          const fence = fenceMatch[1];
+          const lang = fenceMatch[2] ? fenceMatch[2].toLowerCase() : "";
+          const codeLines = [];
+          i += 1;
+          while (i < lines.length && !new RegExp(`^${fence}\\s*$`).test(lines[i])) {
+            codeLines.push(lines[i]);
+            i += 1;
+          }
+          if (i < lines.length) i += 1;
+          const classAttr = lang ? ` class="language-${esc(lang)}"` : "";
+          blocks.push(`<pre><code${classAttr}>${esc(codeLines.join("\n"))}</code></pre>`);
+          continue;
+        }
+
+        const headingMatch = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+        if (headingMatch) {
+          const level = headingMatch[1].length;
+          blocks.push(`<h${level}>${renderInlineMarkdown(headingMatch[2])}</h${level}>`);
+          i += 1;
+          continue;
+        }
+
+        const table = maybeRenderMarkdownTable(lines, i);
+        if (table) {
+          blocks.push(table.html);
+          i = table.nextIndex;
+          continue;
+        }
+
+        if (isHorizontalRule(line)) {
+          blocks.push("<hr>");
+          i += 1;
+          continue;
+        }
+
+        if (/^\s*>\s?/.test(line)) {
+          const quoteLines = [];
+          while (i < lines.length && /^\s*>\s?/.test(lines[i])) {
+            quoteLines.push(lines[i].replace(/^\s*>\s?/, ""));
+            i += 1;
+          }
+          blocks.push(`<blockquote>${renderMarkdownPreview(quoteLines.join("\n"))}</blockquote>`);
+          continue;
+        }
+
+        if (isListLine(line)) {
+          const list = renderMarkdownList(lines, i);
+          blocks.push(list.html);
+          i = list.nextIndex;
+          continue;
+        }
+
+        const paragraphLines = [];
+        while (i < lines.length && !isMarkdownBlockBoundary(lines, i)) {
+          paragraphLines.push(lines[i].trim());
+          i += 1;
+        }
+        const paragraph = paragraphLines.join(" ").trim();
+        if (paragraph) blocks.push(`<p>${renderInlineMarkdown(paragraph)}</p>`);
+      }
+
+      return blocks.join("");
+    }
+
+    function clampMapScale(scale) {
+      return Math.min(Math.max(scale, 0.35), 2.5);
+    }
+
+    function initializeMapRoot() {
+      const rootMeta = state.roots.find(root => root.id === mapRootId);
+      if (rootMeta) {
+        mapState.rootLabel = rootMeta.path || "/root";
+        mapState.rootDescription = rootMeta.description || mapState.rootDescription;
+      }
+      const existing = mapState.nodes.get("") || {};
+      mapState.nodes.set("", {
+        ...existing,
+        path: "",
+        name: mapState.rootLabel,
+        is_dir: true,
+        kind: "dir",
+        has_children: true,
+        size: 0,
+        mtime: existing.mtime || "",
+        absolute_path: mapState.rootLabel,
+      });
+      if (!mapState.selectedPath) mapState.selectedPath = "";
+    }
+
+    function getMapNode(path = "") {
+      initializeMapRoot();
+      return mapState.nodes.get(path) || null;
+    }
+
+    function updateMapViewport() {
+      mapSceneEl.style.transform = `translate(${mapState.viewport.x}px, ${mapState.viewport.y}px) scale(${mapState.viewport.scale})`;
+      mapHudEl.textContent = `${mapState.sceneSize.visibleCount} nodes visible • ${Math.round(mapState.viewport.scale * 100)}% zoom`;
+    }
+
+    function fitMapToStage() {
+      if (!mapState.sceneSize.visibleCount) return;
+      const stageRect = mapStageEl.getBoundingClientRect();
+      if (!stageRect.width || !stageRect.height) return;
+      const padding = isMobileLayout() ? 26 : 64;
+      const scale = clampMapScale(Math.min(
+        (stageRect.width - padding * 2) / Math.max(mapState.sceneSize.width, 1),
+        (stageRect.height - padding * 2) / Math.max(mapState.sceneSize.height, 1),
+        1.15
+      ));
+      mapState.viewport.scale = scale;
+      mapState.viewport.x = (stageRect.width - mapState.sceneSize.width * scale) / 2;
+      mapState.viewport.y = (stageRect.height - mapState.sceneSize.height * scale) / 2;
+      updateMapViewport();
+      mapState.pendingFit = false;
+    }
+
+    function zoomMapAt(clientX, clientY, nextScale) {
+      const stageRect = mapStageEl.getBoundingClientRect();
+      if (!stageRect.width || !stageRect.height) return;
+      const scale = clampMapScale(nextScale);
+      const worldX = (clientX - stageRect.left - mapState.viewport.x) / mapState.viewport.scale;
+      const worldY = (clientY - stageRect.top - mapState.viewport.y) / mapState.viewport.scale;
+      mapState.viewport.scale = scale;
+      mapState.viewport.x = clientX - stageRect.left - worldX * scale;
+      mapState.viewport.y = clientY - stageRect.top - worldY * scale;
+      updateMapViewport();
+    }
+
+    function setMapEmptyState(message, visible = true) {
+      mapEmptyStateEl.textContent = message;
+      mapEmptyStateEl.style.display = visible ? "block" : "none";
+    }
+
+    async function ensureMapBranchLoaded(path = "") {
+      if (mapState.children.has(path)) return true;
+      await loadMapBranch(path);
+      return mapState.children.has(path);
+    }
+
+    function updateMapInspector() {
+      const node = getMapNode(mapState.selectedPath || "");
+      const branch = mapState.children.get(mapState.selectedPath || "");
+      const isDir = !!node?.is_dir;
+      const absolutePath = node?.absolute_path || absoluteMapPath(mapState.selectedPath || "");
+      mapHeadPathEl.textContent = absolutePath;
+      mapInspectorTitleEl.textContent = node?.name || mapState.rootLabel;
+      mapInspectorSubtitleEl.textContent = isDir ? "Folder" : "File";
+      mapInspectorPathEl.textContent = absolutePath;
+      mapInspectorTypeEl.textContent = isDir ? "Directory" : `File (${node?.kind || "unknown"})`;
+      if (isDir) {
+        if (branch) {
+          mapInspectorChildrenEl.textContent = `${branch.entries.length}${branch.truncated ? "+" : ""} loaded`;
+        } else if (mapState.loading.has(mapState.selectedPath || "")) {
+          mapInspectorChildrenEl.textContent = "Loading…";
+        } else {
+          mapInspectorChildrenEl.textContent = "Not loaded";
+        }
+      } else {
+        mapInspectorChildrenEl.textContent = "-";
+      }
+      mapInspectorSizeEl.textContent = isDir ? "-" : fmtBytes(node?.size || 0);
+      mapInspectorMtimeEl.textContent = node?.mtime || "-";
+      mapInspectorNoteEl.textContent = branch?.truncated
+        ? "This folder hit the server-side child cap. Open it in the list browser for the full directory."
+        : (isDir
+          ? "Only visible /root descendants are fetched. Expanding a folder loads it once, then reuses the cached branch."
+          : "Use Open in Browser to jump back to the existing list/preview flow.");
+      mapToggleNodeBtn.disabled = !isDir;
+      mapToggleNodeBtn.textContent = isDir
+        ? ((mapState.expanded.has(mapState.selectedPath || "") && mapState.children.has(mapState.selectedPath || "")) ? "Collapse Folder" : "Expand Folder")
+        : "Folder Only";
+      mapOpenSelectionBtn.disabled = !node;
+      mapInspectorOpenBtn.disabled = !node;
+    }
+
+    function renderMap() {
+      initializeMapRoot();
+      const layouts = [];
+      const edges = [];
+      let row = 0;
+
+      function visit(path, depth) {
+        const node = getMapNode(path);
+        if (!node) return null;
+        const childPaths = node.is_dir && mapState.expanded.has(path)
+          ? (mapState.children.get(path)?.entries || [])
+          : [];
+        const childLayouts = childPaths.map(childPath => visit(childPath, depth + 1)).filter(Boolean);
+        const currentRow = childLayouts.length
+          ? childLayouts.reduce((sum, child) => sum + child.row, 0) / childLayouts.length
+          : row++;
+        const layout = {
+          path,
+          depth,
+          row: currentRow,
+          x: depth * 236,
+          y: currentRow * 104,
+          width: node.is_dir ? 184 : 168,
+          height: node.is_dir ? 64 : 58,
+          node,
+        };
+        layouts.push(layout);
+        childLayouts.forEach(child => edges.push({ from: layout, to: child }));
+        return layout;
+      }
+
+      visit("", 0);
+      mapState.layout = new Map(layouts.map(layout => [layout.path, layout]));
+      const width = Math.max(...layouts.map(layout => layout.x + layout.width), 184) + 120;
+      const height = Math.max(...layouts.map(layout => layout.y + layout.height), 64) + 120;
+      mapState.sceneSize = { width, height, visibleCount: layouts.length };
+
+      mapSceneEl.style.width = `${width}px`;
+      mapSceneEl.style.height = `${height}px`;
+      mapLinesEl.setAttribute("width", String(width));
+      mapLinesEl.setAttribute("height", String(height));
+      mapLinesEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      mapLinesEl.innerHTML = edges.map(edge => {
+        const startX = edge.from.x + edge.from.width;
+        const startY = edge.from.y + edge.from.height / 2;
+        const endX = edge.to.x;
+        const endY = edge.to.y + edge.to.height / 2;
+        const midX = startX + (endX - startX) * 0.48;
+        return `<path class="map-edge" d="M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}" />`;
+      }).join("");
+
+      mapNodeLayerEl.innerHTML = layouts.map(layout => {
+        const node = layout.node;
+        const isExpanded = node.is_dir && mapState.expanded.has(layout.path);
+        const status = node.is_dir
+          ? (mapState.loading.has(layout.path) ? "Loading..." : (isExpanded ? "Collapse" : "Expand"))
+          : "Preview";
+        return `
+          <button
+            type="button"
+            class="map-node ${node.is_dir ? "is-folder" : "is-file"} ${layout.path === mapState.selectedPath ? "is-selected" : ""}"
+            data-path="${esc(layout.path)}"
+            data-kind="${node.is_dir ? "dir" : "file"}"
+            style="left:${layout.x}px; top:${layout.y}px; width:${layout.width}px; min-height:${layout.height}px;"
+          >
+            <span class="map-node-badge">${node.is_dir ? "Folder" : "File"}</span>
+            <span class="map-node-title">${esc(node.name)}</span>
+            <span class="map-node-meta">${node.is_dir ? `<span class="map-node-toggle">${status}</span>` : `${fmtBytes(node.size || 0)} • ${esc(node.kind || "file")}`}</span>
+          </button>
+        `;
+      }).join("");
+
+      mapNodeLayerEl.querySelectorAll(".map-node").forEach(button => {
+        button.addEventListener("click", async () => {
+          const path = button.dataset.path || "";
+          mapState.selectedPath = path;
+          updateMapInspector();
+          const node = getMapNode(path);
+          if (!node?.is_dir) {
+            renderMap();
+            return;
+          }
+          const branchLoaded = mapState.children.has(path);
+          if (mapState.expanded.has(path) && branchLoaded) {
+            mapState.expanded.delete(path);
+            renderMap();
+            return;
+          }
+          mapState.expanded.add(path);
+          renderMap();
+          await ensureMapBranchLoaded(path);
+        });
+      });
+
+      updateMapInspector();
+      if (mapState.pendingFit) {
+        fitMapToStage();
+      } else {
+        updateMapViewport();
+      }
+      if (mapState.errorMessage) {
+        setMapEmptyState(mapState.errorMessage, true);
+      } else if (layouts.length) {
+        setMapEmptyState("", false);
+      } else if (!mapState.loading.size) {
+        setMapEmptyState("No visible nodes to render.", true);
+      }
+    }
+
+    async function loadMapBranch(path = "") {
+      initializeMapRoot();
+      if (mapState.children.has(path) || mapState.loading.has(path)) return;
+      mapState.loading.add(path);
+      setMapEmptyState(`Loading ${absoluteMapPath(path)}…`, !mapState.sceneSize.visibleCount);
+      renderMap();
+      try {
+        const params = new URLSearchParams({ root: mapRootId, path });
+        const res = await fetch(`/api/files/tree?${params}`, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error(`Map request failed (${res.status})`);
+        }
+        const data = await res.json();
+        if (!data.ok) {
+          mapState.errorMessage = data.message || "Failed to load /root map.";
+          return;
+        }
+        mapState.errorMessage = "";
+        const existingRoot = getMapNode("");
+        if (path === "") {
+          mapState.nodes.set("", {
+            ...existingRoot,
+            absolute_path: data.absolute_path || mapState.rootLabel,
+            mtime: existingRoot?.mtime || "",
+          });
+        }
+        const entryPaths = [];
+        data.entries.forEach(entry => {
+          entryPaths.push(entry.path);
+          mapState.nodes.set(entry.path, {
+            ...entry,
+            absolute_path: `${String(data.absolute_path || mapState.rootLabel).replace(/\/$/, "")}/${entry.name}`,
+          });
+        });
+        mapState.children.set(path, {
+          entries: entryPaths,
+          truncated: !!data.truncated,
+          absolutePath: data.absolute_path || absoluteMapPath(path),
+          parent: data.parent || "",
+        });
+      } catch (error) {
+        mapState.errorMessage = error.message || "Failed to load /root map.";
+      } finally {
+        mapState.loading.delete(path);
+        renderMap();
+      }
+    }
+
+    async function toggleSelectedMapNode() {
+      const path = mapState.selectedPath || "";
+      const node = getMapNode(path);
+      if (!node?.is_dir) return;
+      const branchLoaded = mapState.children.has(path);
+      if (mapState.expanded.has(path) && branchLoaded) {
+        mapState.expanded.delete(path);
+        renderMap();
+        return;
+      }
+      mapState.expanded.add(path);
+      renderMap();
+      await ensureMapBranchLoaded(path);
+    }
+
+    function openMapSelectionInBrowser() {
+      const path = mapState.selectedPath || "";
+      const node = getMapNode(path);
+      if (!node) return;
+      closeMapOverlay();
+      if (node.is_dir) {
+        setMobilePanel("browse");
+        openDir(mapRootId, path);
+        return;
+      }
+      setMobilePanel("preview");
+      openFile(mapRootId, path);
+    }
+
+    async function openMapOverlay() {
+      mapState.open = true;
+      mapState.errorMessage = "";
+      mapOverlayEl.classList.add("is-open");
+      mapOverlayEl.setAttribute("aria-hidden", "false");
+      document.body.classList.add("map-open");
+      initializeMapRoot();
+      mapState.pendingFit = true;
+      updateMapInspector();
+      renderMap();
+      await loadMapBranch("");
+    }
+
+    function closeMapOverlay() {
+      mapState.open = false;
+      mapOverlayEl.classList.remove("is-open");
+      mapOverlayEl.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("map-open");
+      mapState.drag = null;
+      mapState.pinch = null;
+      mapState.touches.clear();
+      mapStageEl.classList.remove("is-dragging");
+    }
+
     async function loadRoots() {
       const res = await fetch("/api/files/roots", { cache: "no-store" });
       const data = await res.json();
       state.roots = data.roots || [];
       state.favorites = data.favorites || [];
+      initializeMapRoot();
       renderRoots();
       renderFavorites();
       if (!state.currentRoot && state.roots.length) {
@@ -1571,7 +2895,7 @@
       renderRoots();
       renderCrumbs(root, path);
       treeTitleEl.textContent = data.absolute_path;
-      treeStatusEl.textContent = `${data.entries.length} items`;
+      treeStatusEl.textContent = `${data.entries.length}${data.truncated ? "+" : ""} items`;
 
       const items = [];
       if (data.parent !== null && path) {
@@ -1628,23 +2952,34 @@
 
     function renderPreviewView() {
       let body = "";
+      const mobileBackBtn = isMobileLayout()
+        ? `<button type="button" class="mobile-back-btn" id="mobileBackBtn">&larr; Back</button>`
+        : "";
       if (cf.kind === "image" && cf.rawUrl) {
-        body = `
-          <div class="preview-meta" style="margin-bottom:10px;">Image preview opened in separate window.</div>
-          <button type="button" id="openFloatingImageBtn">Open large image preview</button>
-        `;
-        floatingWindowTitleEl.textContent = cf.name;
-        floatingWindowSubtitleEl.textContent = cf.path;
-        floatingImageStageEl.innerHTML = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" />`;
-        floatingImageMetaEl.textContent = `${fmtBytes(cf.size || 0)} • ${cf.mtime || ""}`;
-        openFloatingImageWindow();
+        if (isMobileLayout()) {
+          // Inline image on mobile — no floating window
+          body = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" style="margin-top:12px;" />`;
+        } else {
+          body = `
+            <div class="preview-meta" style="margin-bottom:10px;">Image preview opened in separate window.</div>
+            <button type="button" id="openFloatingImageBtn">Open large image preview</button>
+          `;
+          floatingWindowTitleEl.textContent = cf.name;
+          floatingWindowSubtitleEl.textContent = cf.path;
+          floatingImageStageEl.innerHTML = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" />`;
+          floatingImageMetaEl.textContent = `${fmtBytes(cf.size || 0)} • ${cf.mtime || ""}`;
+          openFloatingImageWindow();
+        }
       } else {
-        body = `<pre>${esc(cf.content || "")}</pre>`;
-        closeFloatingImageWindow();
+        body = isMarkdownFile(cf.name)
+          ? `<div class="markdown-preview">${renderMarkdownPreview(cf.content || "")}</div>`
+          : `<pre>${esc(cf.content || "")}</pre>`;
+        if (!isMobileLayout()) closeFloatingImageWindow();
       }
       const truncWarn = cf.truncated ? `<div class="badge" style="margin-bottom:8px;">preview truncated — full file loaded on edit</div>` : "";
       const editBtn = (cf.kind === "text") ? `<button type="button" id="editFileBtn" style="margin-top:10px;">✏️ Edit</button>` : "";
       previewEl.innerHTML = `
+        ${mobileBackBtn}
         <h3>${esc(cf.name)}</h3>
         <div class="preview-meta">${esc(cf.path)}</div>
         <div class="preview-meta">${fmtBytes(cf.size || 0)} • ${esc(cf.kind)} • ${esc(cf.mtime || "")}</div>
@@ -1656,6 +2991,8 @@
       if (editBtn2) editBtn2.addEventListener("click", enterEditMode);
       const openFloatingImageBtn = document.getElementById("openFloatingImageBtn");
       if (openFloatingImageBtn) openFloatingImageBtn.addEventListener("click", openFloatingImageWindow);
+      const mobileBack = document.getElementById("mobileBackBtn");
+      if (mobileBack) mobileBack.addEventListener("click", () => setMobilePanel(mobileNavHistory || "browse"));
     }
 
     async function enterEditMode() {
@@ -1816,9 +3153,112 @@
       document.getElementById("browseFeed").style.display = "block";
     }
 
+    function handleMapPointerDown(event) {
+      if (!mapState.open) return;
+      mapState.touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (event.pointerType === "touch") {
+        try {
+          mapStageEl.setPointerCapture(event.pointerId);
+        } catch {}
+      }
+      if (mapState.touches.size >= 2) {
+        const points = [...mapState.touches.values()].slice(0, 2);
+        mapState.drag = null;
+        mapStageEl.classList.remove("is-dragging");
+        mapState.pinch = {
+          distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y),
+          centerX: (points[0].x + points[1].x) / 2,
+          centerY: (points[0].y + points[1].y) / 2,
+        };
+        return;
+      }
+      if (event.target.closest(".map-node")) return;
+      if (event.pointerType !== "touch" && event.button !== 0) return;
+      mapState.drag = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: mapState.viewport.x,
+        originY: mapState.viewport.y,
+      };
+      mapStageEl.classList.add("is-dragging");
+      event.preventDefault();
+    }
+
+    function handleMapPointerMove(event) {
+      if (!mapState.open) return;
+      if (mapState.touches.has(event.pointerId)) {
+        mapState.touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      }
+      if (mapState.pinch && mapState.touches.size >= 2) {
+        const points = [...mapState.touches.values()].slice(0, 2);
+        const centerX = (points[0].x + points[1].x) / 2;
+        const centerY = (points[0].y + points[1].y) / 2;
+        const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+        if (distance > 0 && mapState.pinch.distance > 0) {
+          const nextScale = mapState.viewport.scale * (distance / mapState.pinch.distance);
+          zoomMapAt(centerX, centerY, nextScale);
+          mapState.viewport.x += centerX - mapState.pinch.centerX;
+          mapState.viewport.y += centerY - mapState.pinch.centerY;
+          updateMapViewport();
+          mapState.pinch = { distance, centerX, centerY };
+        }
+        return;
+      }
+      if (!mapState.drag || mapState.drag.pointerId !== event.pointerId) return;
+      mapState.viewport.x = mapState.drag.originX + (event.clientX - mapState.drag.startX);
+      mapState.viewport.y = mapState.drag.originY + (event.clientY - mapState.drag.startY);
+      updateMapViewport();
+    }
+
+    function handleMapPointerUp(event) {
+      if (mapState.touches.has(event.pointerId)) {
+        mapState.touches.delete(event.pointerId);
+      }
+      if (mapState.drag?.pointerId === event.pointerId) {
+        mapState.drag = null;
+        mapStageEl.classList.remove("is-dragging");
+      }
+      if (mapState.pinch && mapState.touches.size < 2) {
+        mapState.pinch = null;
+      }
+      if (event.pointerType === "touch") {
+        try {
+          mapStageEl.releasePointerCapture(event.pointerId);
+        } catch {}
+      }
+    }
+
+    function handleMapWheel(event) {
+      if (!mapState.open) return;
+      event.preventDefault();
+      if (event.ctrlKey || event.metaKey) {
+        const factor = Math.exp(-event.deltaY * 0.0014);
+        zoomMapAt(event.clientX, event.clientY, mapState.viewport.scale * factor);
+        return;
+      }
+      mapState.viewport.x -= event.deltaX;
+      mapState.viewport.y -= event.deltaY;
+      updateMapViewport();
+    }
+
     mobileNavEl.querySelectorAll("button").forEach(button => {
       button.addEventListener("click", () => setMobilePanel(button.dataset.panel));
     });
+    openMapBtn.addEventListener("click", openMapOverlay);
+    document.getElementById("mapCloseBtn").addEventListener("click", closeMapOverlay);
+    document.getElementById("mapResetBtn").addEventListener("click", fitMapToStage);
+    mapOpenSelectionBtn.addEventListener("click", openMapSelectionInBrowser);
+    mapInspectorOpenBtn.addEventListener("click", openMapSelectionInBrowser);
+    mapToggleNodeBtn.addEventListener("click", toggleSelectedMapNode);
+    mapOverlayEl.addEventListener("click", event => {
+      if (event.target === mapOverlayEl) closeMapOverlay();
+    });
+    mapStageEl.addEventListener("pointerdown", handleMapPointerDown);
+    mapStageEl.addEventListener("wheel", handleMapWheel, { passive: false });
+    window.addEventListener("pointermove", handleMapPointerMove);
+    window.addEventListener("pointerup", handleMapPointerUp);
+    window.addEventListener("pointercancel", handleMapPointerUp);
     floatingWindowHeadEl.addEventListener("pointerdown", event => startWindowInteraction(event, "drag"));
     floatingImageWindowEl.querySelectorAll(".resize-handle").forEach(handle => {
       handle.addEventListener("pointerdown", event => startWindowInteraction(event, "resize", handle.dataset.resize));
@@ -1829,6 +3269,9 @@
     floatingWindowToggleBtn.addEventListener("click", () => setFloatingWindowMinimized(!floatingWindowState.minimized));
     floatingWindowCloseBtn.addEventListener("click", closeFloatingImageWindow);
     window.addEventListener("resize", () => {
+      if (mapState.open) {
+        fitMapToStage();
+      }
       if (isMobileLayout()) return;
       if (!floatingWindowState.rect) {
         initializeFloatingWindow();
@@ -1837,6 +3280,9 @@
       applyFloatingWindowRect(floatingWindowState.rect);
     });
     mobileLayoutQuery.addEventListener("change", () => {
+      if (mapState.open) {
+        fitMapToStage();
+      }
       if (isMobileLayout()) {
         stopWindowInteraction();
       } else if (!floatingWindowState.rect) {
@@ -1845,6 +3291,41 @@
         applyFloatingWindowRect(floatingWindowState.rect);
       }
     });
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape" && mapState.open) {
+        closeMapOverlay();
+      }
+    });
+    // --- Swipe navigation for mobile ---
+    (function initSwipe() {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let swiping = false;
+
+      document.addEventListener("touchstart", (e) => {
+        if (!isMobileLayout()) return;
+        if (document.body.classList.contains("map-open")) return;
+        if (e.target.closest(".crumbs, .preview-edit-area, textarea, input, .modal-overlay, .map-overlay")) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        swiping = true;
+      }, { passive: true });
+
+      document.addEventListener("touchend", (e) => {
+        if (!swiping || !isMobileLayout()) return;
+        swiping = false;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.7) return;
+        const idx = mobilePanelOrder.indexOf(state.mobilePanel);
+        if (dx > 0 && idx > 0) {
+          setMobilePanel(mobilePanelOrder[idx - 1]);
+        } else if (dx < 0 && idx < mobilePanelOrder.length - 1) {
+          setMobilePanel(mobilePanelOrder[idx + 1]);
+        }
+      }, { passive: true });
+    })();
+
     document.getElementById("refreshAllBtn").addEventListener("click", refreshAll);
 
     document.getElementById("themeToggleBtn").addEventListener("click", () => {
