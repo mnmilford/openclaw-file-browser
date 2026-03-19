@@ -55,6 +55,7 @@ INDEX_PATH = BASE_DIR / "index.html"
 CHAT_PATH = BASE_DIR / "chat.html"
 CHAT_TRANSCRIPT_PATH = BASE_DIR / "chat-transcript.html"
 FILES_PATH = BASE_DIR / "files.html"
+TRASH_DIR = BASE_DIR / ".trash"
 UPLOADS_DIR = env_path("OPENCLAW_FILE_BROWSER_UPLOADS_DIR", str(BASE_DIR / "uploads"))
 ROOT_HOME_DIR = env_path("OPENCLAW_FILE_BROWSER_HOME_DIR", "/root")
 PROJECTS_DIR = env_path(
@@ -103,7 +104,7 @@ TEXT_EXTENSIONS = {
     ".yaml", ".yml",
 }
 IMAGE_EXTENSIONS = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
-SKIP_NAMES = {".git", "node_modules", "__pycache__", ".openclaw.bak.nested"}
+SKIP_NAMES = {".git", ".trash", "node_modules", "__pycache__", ".openclaw.bak.nested"}
 FILE_LIST_LIMIT = 250
 MAP_ROOT_ID = "root-home"
 WATCH_ROOTS = {
@@ -156,6 +157,11 @@ WATCH_ROOTS = {
         "label": "Agent sessions",
         "path": OPENCLAW_SESSIONS_DIR,
         "description": "Session JSONL transcripts and agent execution history.",
+    },
+    "tmp": {
+        "label": "Temp files",
+        "path": Path("/tmp"),
+        "description": "Temporary files, image previews, and scratch outputs.",
     },
 }
 FAVORITES = [
@@ -852,6 +858,214 @@ def search_files(query, limit=50):
     return {"ok": True, "query": query, "results": results[:limit]}
 
 
+def _dir_size(path_obj):
+    """Recursively compute total size of a directory."""
+    total = 0
+    try:
+        for item in path_obj.rglob("*"):
+            if item.is_file():
+                try:
+                    total += item.stat().st_size
+                except OSError:
+                    pass
+    except OSError:
+        pass
+    return total
+
+
+def trash_move(items):
+    """Move files/dirs to trash. items is a list of {root, path} dicts."""
+    TRASH_DIR.mkdir(parents=True, exist_ok=True)
+    results = []
+    for item in items:
+        root_id = item.get("root", "")
+        rel_path = item.get("path", "")
+        if not root_id or not rel_path:
+            results.append({"ok": False, "message": "Missing root or path"})
+            continue
+        try:
+            target = _resolve_within(root_id, rel_path)
+        except Exception:
+            results.append({"ok": False, "message": "Invalid path"})
+            continue
+        if not target.exists():
+            results.append({"ok": False, "message": "Path not found"})
+            continue
+
+        ts = datetime.now(timezone.utc)
+        ts_str = ts.strftime("%Y%m%d%H%M%S")
+        original_name = target.name
+        trash_name = f"{ts_str}_{original_name}"
+
+        # Ensure uniqueness
+        dest = TRASH_DIR / trash_name
+        counter = 0
+        while dest.exists() or (TRASH_DIR / f"{trash_name}.meta.json").exists():
+            counter += 1
+            trash_name = f"{ts_str}_{counter}_{original_name}"
+            dest = TRASH_DIR / trash_name
+
+        # Compute size before move
+        if target.is_dir():
+            size = _dir_size(target)
+        else:
+            try:
+                size = target.stat().st_size
+            except OSError:
+                size = 0
+
+        meta = {
+            "original_root": root_id,
+            "original_path": rel_path,
+            "deleted_at": ts.isoformat(),
+            "size": size,
+            "is_dir": target.is_dir(),
+            "trash_name": trash_name,
+        }
+
+        try:
+            shutil.move(str(target), str(dest))
+        except OSError as e:
+            results.append({"ok": False, "message": str(e)})
+            continue
+
+        meta_path = TRASH_DIR / f"{trash_name}.meta.json"
+        try:
+            meta_path.write_text(json.dumps(meta), encoding="utf-8")
+        except OSError:
+            pass
+
+        results.append({"ok": True, "message": "Moved to trash", "trash_name": trash_name})
+
+    return {"ok": True, "results": results}
+
+
+def trash_list():
+    """List trash contents."""
+    if not TRASH_DIR.exists():
+        return {"ok": True, "items": [], "total_size": 0}
+    items = []
+    total_size = 0
+    for meta_file in sorted(TRASH_DIR.glob("*.meta.json"), reverse=True):
+        try:
+            meta = json.loads(meta_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        trash_name = meta.get("trash_name", meta_file.stem.replace(".meta", ""))
+        trash_path = TRASH_DIR / trash_name
+        if not trash_path.exists():
+            continue
+        size = meta.get("size", 0)
+        total_size += size
+        items.append({
+            "id": trash_name,
+            "original_root": meta.get("original_root", ""),
+            "original_path": meta.get("original_path", ""),
+            "deleted_at": meta.get("deleted_at", ""),
+            "size": size,
+            "is_dir": meta.get("is_dir", False),
+            "name": trash_name.split("_", 1)[-1] if "_" in trash_name else trash_name,
+        })
+    return {"ok": True, "items": items, "total_size": total_size}
+
+
+def trash_restore(item_ids):
+    """Restore items from trash to original location."""
+    results = []
+    for item_id in item_ids:
+        # Validate item_id: must be a simple filename with no path separators
+        safe_id = Path(item_id).name
+        if safe_id != item_id or not safe_id:
+            results.append({"ok": False, "message": "Invalid trash item id"})
+            continue
+        meta_path = TRASH_DIR / f"{safe_id}.meta.json"
+        trash_path = TRASH_DIR / safe_id
+        if not trash_path.exists():
+            results.append({"ok": False, "message": "Trash item not found"})
+            continue
+        if not meta_path.exists():
+            results.append({"ok": False, "message": "Metadata not found"})
+            continue
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            results.append({"ok": False, "message": "Cannot read metadata"})
+            continue
+
+        root_id = meta.get("original_root", "")
+        rel_path = meta.get("original_path", "")
+        if not root_id or not rel_path:
+            results.append({"ok": False, "message": "Missing original location in metadata"})
+            continue
+
+        try:
+            dest = _resolve_within(root_id, rel_path)
+        except Exception:
+            results.append({"ok": False, "message": "Original root no longer valid"})
+            continue
+
+        if dest.exists():
+            results.append({"ok": False, "message": f"Original path already exists: {rel_path}"})
+            continue
+
+        # Ensure parent directory exists
+        dest.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            shutil.move(str(trash_path), str(dest))
+            meta_path.unlink(missing_ok=True)
+        except OSError as e:
+            results.append({"ok": False, "message": str(e)})
+            continue
+
+        results.append({"ok": True, "message": "Restored"})
+
+    return {"ok": True, "results": results}
+
+
+def trash_delete(item_ids):
+    """Permanently delete specific items from trash."""
+    results = []
+    for item_id in item_ids:
+        safe_id = Path(item_id).name
+        if safe_id != item_id or not safe_id:
+            results.append({"ok": False, "message": "Invalid trash item id"})
+            continue
+        meta_path = TRASH_DIR / f"{safe_id}.meta.json"
+        trash_path = TRASH_DIR / safe_id
+        if not trash_path.exists():
+            results.append({"ok": False, "message": "Trash item not found"})
+            continue
+        try:
+            if trash_path.is_dir():
+                shutil.rmtree(str(trash_path))
+            else:
+                trash_path.unlink()
+            meta_path.unlink(missing_ok=True)
+        except OSError as e:
+            results.append({"ok": False, "message": str(e)})
+            continue
+        results.append({"ok": True, "message": "Permanently deleted"})
+    return {"ok": True, "results": results}
+
+
+def trash_empty():
+    """Permanently delete all trash contents."""
+    if not TRASH_DIR.exists():
+        return {"ok": True, "message": "Trash is already empty", "deleted": 0}
+    count = 0
+    for item in list(TRASH_DIR.iterdir()):
+        try:
+            if item.is_dir():
+                shutil.rmtree(str(item))
+            else:
+                item.unlink()
+            count += 1
+        except OSError:
+            pass
+    return {"ok": True, "message": f"Emptied trash ({count} items removed)", "deleted": count}
+
+
 def recent_changes(limit=40):
     files = []
     max_files = max(10, min(limit, 100))
@@ -1129,6 +1343,9 @@ class Handler(BaseHTTPRequestHandler):
                 limit = 50
             self._send_json(search_files(query, limit=limit))
             return
+        if parsed.path == "/api/trash":
+            self._send_json(trash_list())
+            return
         if parsed.path == "/api/files/recent":
             q = parse_qs(parsed.query)
             try:
@@ -1249,6 +1466,51 @@ class Handler(BaseHTTPRequestHandler):
                 filename = str(payload.get("filename", ""))
                 content = str(payload.get("content", ""))
                 self._send_json(create_text_file(root_id, rel_dir, filename, content))
+            except Exception as e:
+                self._send_json({"ok": False, "message": str(e)}, code=500)
+            return
+        if self.path == "/api/files/delete":
+            try:
+                body_len = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(body_len)
+                payload = json.loads(body.decode("utf-8"))
+                items = payload.get("items", [])
+                if not items:
+                    self._send_json({"ok": False, "message": "No items specified"}, code=400)
+                    return
+                self._send_json(trash_move(items))
+            except Exception as e:
+                self._send_json({"ok": False, "message": str(e)}, code=500)
+            return
+        if self.path == "/api/trash/restore":
+            try:
+                body_len = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(body_len)
+                payload = json.loads(body.decode("utf-8"))
+                items = payload.get("items", [])
+                if not items:
+                    self._send_json({"ok": False, "message": "No items specified"}, code=400)
+                    return
+                self._send_json(trash_restore(items))
+            except Exception as e:
+                self._send_json({"ok": False, "message": str(e)}, code=500)
+            return
+        if self.path == "/api/trash/empty":
+            try:
+                self._send_json(trash_empty())
+            except Exception as e:
+                self._send_json({"ok": False, "message": str(e)}, code=500)
+            return
+        if self.path == "/api/trash/delete":
+            try:
+                body_len = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(body_len)
+                payload = json.loads(body.decode("utf-8"))
+                items = payload.get("items", [])
+                if not items:
+                    self._send_json({"ok": False, "message": "No items specified"}, code=400)
+                    return
+                self._send_json(trash_delete(items))
             except Exception as e:
                 self._send_json({"ok": False, "message": str(e)}, code=500)
             return

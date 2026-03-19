@@ -231,16 +231,22 @@
       from { opacity: 0.18; }
       to { opacity: 0.38; }
     }
-    .theme-scene__sprite {
+    .theme-scene__sprite-wrap {
       position: absolute;
       width: 138px;
       aspect-ratio: 1;
+      will-change: transform;
+    }
+    .theme-scene__sprite {
+      position: absolute;
+      inset: 0;
       background-repeat: no-repeat;
       background-position: center;
       background-size: contain;
       filter: drop-shadow(0 0 10px rgba(103, 232, 249, 0.26)) drop-shadow(0 16px 26px rgba(8, 12, 22, 0.24));
       opacity: 0.97;
-      will-change: transform;
+      transform-origin: center center;
+      transition: transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 820ms ease, filter 820ms ease;
     }
     .theme-scene__sprite::before {
       content: "";
@@ -250,6 +256,7 @@
       background: radial-gradient(circle, rgba(103, 232, 249, 0.22), rgba(167, 139, 250, 0.1) 48%, transparent 72%);
       filter: blur(10px);
       opacity: 0.9;
+      transition: opacity 720ms ease;
     }
     .theme-scene__sprite::after {
       content: "";
@@ -267,12 +274,24 @@
       transform: rotate(18deg);
       opacity: 0.88;
       filter: blur(0.7px);
+      transition: opacity 720ms ease;
     }
-    .theme-scene__sprite--1 {
+    .theme-scene__sprite-wrap--1 {
       top: 12%;
       left: 8%;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='edge' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a5f3fc'/%3E%3Cstop offset='50%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23c4b5fd'/%3E%3C/linearGradient%3E%3ClinearGradient id='faceA' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2316405d' stop-opacity='.9'/%3E%3Cstop offset='100%25' stop-color='%2338bdf8' stop-opacity='.42'/%3E%3C/linearGradient%3E%3ClinearGradient id='faceB' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23112c4d' stop-opacity='.84'/%3E%3Cstop offset='100%25' stop-color='%23a855f7' stop-opacity='.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='faceC' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23c084fc' stop-opacity='.28'/%3E%3Cstop offset='100%25' stop-color='%23ec4899' stop-opacity='.5'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='2.3' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23glow)'%3E%3Cpolygon points='90,22 142,72 90,94 38,72' fill='url(%23faceA)' stroke='url(%23edge)' stroke-width='2.8'/%3E%3Cpolygon points='38,72 90,94 90,150 38,124' fill='url(%23faceB)' stroke='url(%23edge)' stroke-width='2.8'/%3E%3Cpolygon points='142,72 90,94 90,150 142,124' fill='url(%23faceC)' stroke='url(%23edge)' stroke-width='2.8'/%3E%3Cpath d='M90 22 L90 150 M38 72 L142 72 M38 124 L90 94 L142 124' stroke='url(%23edge)' stroke-width='2.6' fill='none'/%3E%3Cg stroke='%237dd3fc' stroke-width='1.7' stroke-linecap='round' opacity='.9'%3E%3Cpath d='M63 54 L76 54 L82 46 L91 46'/%3E%3Cpath d='M55 71 L68 71 L76 63 L93 63'/%3E%3Cpath d='M90 35 L102 45 L115 45'/%3E%3Cpath d='M105 63 L119 63 L127 73'/%3E%3Cpath d='M90 94 L90 108 L74 118 L74 132'/%3E%3Cpath d='M90 104 L106 110 L106 128'/%3E%3Cpath d='M60 88 L72 96'/%3E%3Cpath d='M118 88 L106 96'/%3E%3C/g%3E%3Cg fill='%23fde68a' opacity='.95'%3E%3Ccircle cx='76' cy='54' r='2.2'/%3E%3Ccircle cx='93' cy='63' r='2.1'/%3E%3Ccircle cx='115' cy='45' r='2.2'/%3E%3Ccircle cx='106' cy='110' r='2.3'/%3E%3Ccircle cx='74' cy='118' r='2.1'/%3E%3Ccircle cx='90' cy='78' r='2.4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
       animation: lilMikeDriftA 24s ease-in-out infinite alternate;
+    }
+    .theme-scene__sprite--1 {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='edge' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a5f3fc'/%3E%3Cstop offset='50%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23c4b5fd'/%3E%3C/linearGradient%3E%3ClinearGradient id='faceA' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2316405d' stop-opacity='.9'/%3E%3Cstop offset='100%25' stop-color='%2338bdf8' stop-opacity='.42'/%3E%3C/linearGradient%3E%3ClinearGradient id='faceB' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23112c4d' stop-opacity='.84'/%3E%3Cstop offset='100%25' stop-color='%23a855f7' stop-opacity='.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='faceC' x1='0%25' x2='100%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23c084fc' stop-opacity='.28'/%3E%3Cstop offset='100%25' stop-color='%23ec4899' stop-opacity='.5'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='2.3' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23glow)'%3E%3Cpolygon points='90,22 142,72 90,94 38,72' fill='url(%23faceA)' stroke='url(%23edge)' stroke-width='2.8'/%3E%3Cpolygon points='38,72 90,94 90,150 38,124' fill='url(%23faceB)' stroke='url(%23edge)' stroke-width='2.8'/%3E%3Cpolygon points='142,72 90,94 90,150 142,124' fill='url(%23faceC)' stroke='url(%23edge)' stroke-width='2.8'/%3E%3Cpath d='M90 22 L90 150 M38 72 L142 72 M38 124 L90 94 L142 124' stroke='url(%23edge)' stroke-width='2.6' fill='none'/%3E%3Cg stroke='%237dd3fc' stroke-width='1.7' stroke-linecap='round' opacity='.9'%3E%3Cpath d='M63 54 L76 54 L82 46 L91 46'/%3E%3Cpath d='M55 71 L68 71 L76 63 L93 63'/%3E%3Cpath d='M90 35 L102 45 L115 45'/%3E%3Cpath d='M105 63 L119 63 L127 73'/%3E%3Cpath d='M90 94 L90 108 L74 118 L74 132'/%3E%3Cpath d='M90 104 L106 110 L106 128'/%3E%3Cpath d='M60 88 L72 96'/%3E%3Cpath d='M118 88 L106 96'/%3E%3C/g%3E%3Cg fill='%23fde68a' opacity='.95'%3E%3Ccircle cx='76' cy='54' r='2.2'/%3E%3Ccircle cx='93' cy='63' r='2.1'/%3E%3Ccircle cx='115' cy='45' r='2.2'/%3E%3Ccircle cx='106' cy='110' r='2.3'/%3E%3Ccircle cx='74' cy='118' r='2.1'/%3E%3Ccircle cx='90' cy='78' r='2.4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    :root[data-style-theme="lil-mike"][data-lil-mike-away="true"] .theme-scene__sprite {
+      transform: translate3d(26px, -20px, 0) scale(0.34);
+      opacity: 0.08;
+      filter: drop-shadow(0 0 4px rgba(103, 232, 249, 0.12));
+    }
+    :root[data-style-theme="lil-mike"][data-lil-mike-away="true"] .theme-scene__sprite::before,
+    :root[data-style-theme="lil-mike"][data-lil-mike-away="true"] .theme-scene__sprite::after {
+      opacity: 0;
     }
     @keyframes lilMikeDriftA {
       0% { transform: translate3d(0, 0, 0) rotate(-6deg) scale(1); }
@@ -280,6 +299,49 @@
       48% { transform: translate3d(50vw, -4vh, 0) rotate(-3deg) scale(0.98); }
       72% { transform: translate3d(28vw, 20vh, 0) rotate(10deg) scale(1.02); }
       100% { transform: translate3d(62vw, 10vh, 0) rotate(-5deg) scale(0.95); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .theme-scene__stars,
+      .theme-scene__stars::before,
+      .theme-scene__stars::after,
+      .theme-scene__sprite {
+        animation: none !important;
+        transform: none !important;
+      }
+      .theme-scene__sprite::after {
+        display: none;
+      }
+      .panel::after,
+      button::after,
+      .btn::after {
+        transition: none;
+        filter: none;
+      }
+    }
+    @media (max-width: 900px), (pointer: coarse) {
+      [data-style-theme="lil-mike"] .theme-scene {
+        display: none;
+      }
+      [data-style-theme="lil-mike"] body {
+        background-image: none;
+      }
+      [data-style-theme="lil-mike"] .shell > .panel,
+      [data-style-theme="lil-mike"] .shell > .panel.alt {
+        background: var(--panel);
+      }
+      [data-theme="dark"][data-style-theme="lil-mike"] .shell > .panel,
+      [data-theme="dark"][data-style-theme="lil-mike"] .shell > .panel.alt {
+        background: var(--panel);
+      }
+      .floating-image-window {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      .panel::after,
+      button::after,
+      .btn::after {
+        filter: drop-shadow(0 4px 10px var(--shadow));
+      }
     }
     [data-style-theme="lil-mike"] body {
       background-color: #eef6ff;
@@ -737,12 +799,12 @@
     .floating-image-window {
       display: none;
       position: fixed;
-      top: 12px;
-      right: 12px;
-      width: clamp(360px, 31vw, 540px);
+      top: 50%;
+      left: 50%;
+      width: min(1100px, calc(100vw - 24px));
       min-width: 320px;
       min-height: 320px;
-      height: min(84dvh, 920px);
+      height: min(1178px, calc(100dvh - 24px));
       z-index: 30;
       box-shadow: 0 20px 48px -28px var(--shadow);
       overflow: hidden;
@@ -776,8 +838,29 @@
       min-width: 0;
       flex: 1;
     }
+    .floating-window-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .floating-window-title-row h2 {
+      margin: 0;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .floating-window-title .sub {
       margin-top: 6px;
+    }
+    .copy-path-btn {
+      min-width: 116px;
+      min-height: 36px;
+      padding: 8px 12px;
+      font-size: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .floating-window-actions {
       display: flex;
@@ -817,6 +900,54 @@
       padding: 18px;
       background: color-mix(in srgb, var(--panel-2) 92%, transparent);
     }
+    .floating-image-stage.is-document {
+      display: block;
+      overflow: auto;
+      padding: 0;
+    }
+    .floating-preview-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      height: 100%;
+    }
+    .floating-preview-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 14px 18px 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+    }
+    .floating-preview-tab {
+      min-height: 34px;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: transparent;
+    }
+    .floating-preview-tab.is-active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .floating-preview-scroll {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      padding: 18px;
+    }
+    .floating-preview-browser-wrap {
+      flex: 1;
+      min-height: 0;
+      padding: 18px;
+    }
+    .floating-preview-browser {
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+      border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+      border-radius: 12px;
+      background: #fff;
+    }
     .floating-image-stage img {
       max-width: 100%;
       max-height: 100%;
@@ -829,6 +960,13 @@
     .floating-image-empty {
       color: var(--muted);
       font-size: 0.92rem;
+    }
+    .floating-image-stage.is-document pre {
+      margin-top: 0;
+    }
+    .floating-image-stage.is-document .markdown-preview {
+      width: 100%;
+      max-width: 100%;
     }
     .floating-image-meta {
       padding: 12px 18px 16px;
@@ -1167,6 +1305,163 @@
     [data-theme="dark"] pre {
       background: #1e1e1e;
       color: #e8e8e8;
+    }
+    .syntax-block {
+      margin-top: 0;
+      white-space: pre;
+      word-break: normal;
+      tab-size: 2;
+      font-family: "JetBrains Mono", "Menlo", "Monaco", monospace;
+      font-size: 12.5px;
+      line-height: 1.55;
+    }
+    .syntax-punct {
+      color: color-mix(in srgb, var(--muted) 82%, var(--ink));
+    }
+    .syntax-key {
+      color: #c2410c;
+    }
+    .syntax-string {
+      color: #0f766e;
+    }
+    .syntax-number {
+      color: #7c3aed;
+    }
+    .syntax-bool {
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .syntax-null {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    .syntax-tag {
+      color: #2563eb;
+    }
+    .syntax-attr {
+      color: #9333ea;
+    }
+    .syntax-comment {
+      color: var(--muted);
+      font-style: italic;
+    }
+    [data-theme="dark"] .syntax-key {
+      color: #fdba74;
+    }
+    [data-theme="dark"] .syntax-string {
+      color: #5eead4;
+    }
+    [data-theme="dark"] .syntax-number {
+      color: #c4b5fd;
+    }
+    [data-theme="dark"] .syntax-bool {
+      color: #93c5fd;
+    }
+    [data-theme="dark"] .syntax-null {
+      color: #fca5a5;
+    }
+    [data-theme="dark"] .syntax-tag {
+      color: #93c5fd;
+    }
+    [data-theme="dark"] .syntax-attr {
+      color: #d8b4fe;
+    }
+    .json-tree {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 18px;
+    }
+    .json-tree-node {
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      overflow: hidden;
+    }
+    .json-tree-node[open] {
+      box-shadow: 0 12px 20px -20px var(--shadow);
+    }
+    .json-tree-summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      user-select: none;
+    }
+    .json-tree-summary::-webkit-details-marker {
+      display: none;
+    }
+    .json-tree-chevron {
+      color: var(--accent);
+      font-size: 11px;
+      width: 10px;
+      flex-shrink: 0;
+    }
+    .json-tree-node[open] > .json-tree-summary .json-tree-chevron {
+      transform: rotate(90deg);
+    }
+    .json-tree-key {
+      font-weight: 700;
+      color: var(--ink);
+      word-break: break-word;
+    }
+    .json-tree-sep {
+      color: var(--muted);
+    }
+    .json-tree-meta {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .json-tree-children {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 12px 12px 24px;
+    }
+    .json-tree-leaf {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--panel-2) 82%, transparent);
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .json-tree-empty {
+      padding: 0 2px 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .json-tree-value--string {
+      color: #0f766e;
+    }
+    .json-tree-value--number {
+      color: #7c3aed;
+    }
+    .json-tree-value--bool {
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .json-tree-value--null {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    [data-theme="dark"] .json-tree-value--string {
+      color: #5eead4;
+    }
+    [data-theme="dark"] .json-tree-value--number {
+      color: #c4b5fd;
+    }
+    [data-theme="dark"] .json-tree-value--bool {
+      color: #93c5fd;
+    }
+    [data-theme="dark"] .json-tree-value--null {
+      color: #fca5a5;
     }
 
     .markdown-preview {
@@ -1805,6 +2100,326 @@
         animation-duration: 60s;
       }
     }
+
+    /* --- Selection mode --- */
+    .selection-toolbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 10px 18px;
+      background: color-mix(in srgb, var(--accent) 12%, var(--panel) 88%);
+      border-bottom: 1px solid var(--accent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .selection-toolbar.is-active {
+      display: flex;
+    }
+    .selection-toolbar .selection-count {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      flex: 1;
+    }
+    .selection-toolbar button {
+      padding: 8px 14px;
+      font-size: 13px;
+      min-height: 38px;
+    }
+    .selection-toolbar .delete-btn {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+    }
+    .selection-toolbar .delete-btn:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+    .entry.is-selected {
+      background: color-mix(in srgb, var(--accent) 14%, var(--panel-2) 86%);
+      border-color: var(--accent);
+    }
+    .entry .select-check {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--muted);
+      border-radius: 4px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .entry .select-check.is-checked {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    body.selection-mode .entry .select-check {
+      display: inline-flex;
+    }
+    body.selection-mode .entry {
+      grid-template-columns: auto 1fr auto;
+      user-select: none;
+    }
+    body.selection-mode .entry .badge {
+      display: none;
+    }
+
+    /* --- Trash button --- */
+    .trash-btn {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .trash-btn:hover {
+      background: var(--panel-2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .trash-btn::after {
+      display: none;
+    }
+
+    /* --- Trash modal --- */
+    .trash-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 42, 48, 0.62);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px 12px;
+      overflow-y: auto;
+      transition: background 0.3s ease;
+    }
+    [data-theme="dark"] .trash-overlay {
+      background: rgba(0, 0, 0, 0.7);
+    }
+    .trash-box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 40px var(--shadow);
+      width: min(720px, 100%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-top: 40px;
+      max-height: calc(100dvh - 80px);
+    }
+    .trash-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+      gap: 12px;
+    }
+    .trash-head h2 {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .trash-head-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .trash-summary {
+      padding: 10px 18px;
+      font-size: 13px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+    }
+    .trash-list {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+    .trash-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      transition: var(--transition);
+    }
+    .trash-item:last-child {
+      border-bottom: none;
+    }
+    .trash-item:hover {
+      background: var(--panel-2);
+    }
+    .trash-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .trash-item-name {
+      font-size: 14px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+    .trash-item-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      word-break: break-word;
+    }
+    .trash-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .trash-item-actions button {
+      padding: 6px 10px;
+      font-size: 12px;
+      min-height: 32px;
+    }
+    .trash-item-actions .perm-delete-btn {
+      background: transparent;
+      border-color: #dc2626;
+      color: #dc2626;
+    }
+    .trash-item-actions .perm-delete-btn:hover {
+      background: #dc2626;
+      color: #fff;
+    }
+    .trash-empty-state {
+      padding: 32px 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .empty-trash-btn {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+    .empty-trash-btn:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
+    /* --- Confirm dialog --- */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 42, 48, 0.62);
+      backdrop-filter: blur(2px);
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    [data-theme="dark"] .confirm-overlay {
+      background: rgba(0, 0, 0, 0.7);
+    }
+    .confirm-box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 40px var(--shadow);
+      width: min(400px, 100%);
+      padding: 24px;
+      text-align: center;
+    }
+    .confirm-box h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+    .confirm-box p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .confirm-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .confirm-actions .confirm-delete-btn {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+    }
+    .confirm-actions .confirm-delete-btn:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
+    /* --- Toast Notification --- */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 24px -10px var(--shadow);
+      z-index: 200;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .toast.is-visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .clickable-path {
+      cursor: pointer;
+      color: var(--accent) !important;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: opacity 0.2s ease;
+    }
+    .clickable-path:hover {
+      opacity: 0.8;
+    }
+
+    @media (max-width: 780px) {
+      .selection-toolbar {
+        padding: 10px 14px;
+      }
+      .trash-overlay {
+        padding: 0;
+        align-items: stretch;
+      }
+      .trash-box {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        max-height: 100dvh;
+      }
+      .trash-item {
+        flex-wrap: wrap;
+      }
+      .trash-item-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
   </style>
 </head>
 <body data-mobile-panel="roots">
@@ -1812,7 +2427,9 @@
     <div class="theme-scene__nebula"></div>
     <div class="theme-scene__stars"></div>
     <div class="theme-scene__grid"></div>
-    <div class="theme-scene__sprite theme-scene__sprite--1"></div>
+    <div class="theme-scene__sprite-wrap theme-scene__sprite-wrap--1">
+      <div class="theme-scene__sprite theme-scene__sprite--1"></div>
+    </div>
   </div>
   <main class="shell">
     <div class="mobile-nav" id="mobileNav">
@@ -1838,7 +2455,7 @@
             <button id="themeToggleBtn" type="button" class="secondary" title="Toggle dark mode" style="padding:8px 12px; font-size:16px; border-radius:8px;">🌙</button>
           </div>
         </div>
-        <p class="sub">Read-only browser for OpenClaw state, workspace files, sessions, and uploads.</p>
+        <p class="sub">Browse, edit, and manage OpenClaw state, workspace files, sessions, and uploads.</p>
         <div class="toolbar">
           <input type="text" id="searchInput" placeholder="🔍 Search files..." style="flex:1;" />
           <button id="openMapBtn" type="button" class="secondary">Map View</button>
@@ -1869,8 +2486,15 @@
             <input type="file" id="uploadInput" style="display:none" multiple />
           </label>
           <button type="button" id="newMdBtn">📝 New .md file</button>
+          <button type="button" id="selectModeBtn" class="secondary">Select</button>
+          <button type="button" id="trashBtn" class="trash-btn">🗑 Trash</button>
           <span id="uploadStatus" style="font-size:13px;color:var(--muted);align-self:center;"></span>
         </div>
+      </div>
+      <div class="selection-toolbar" id="selectionToolbar">
+        <span class="selection-count" id="selectionCount">0 selected</span>
+        <button type="button" class="delete-btn" id="deleteSelectedBtn">Delete</button>
+        <button type="button" class="secondary" id="cancelSelectionBtn">Cancel</button>
       </div>
       <div class="panel-body">
         <div id="tree" class="tree"></div>
@@ -1902,8 +2526,11 @@
   <section class="panel floating-image-window" id="floatingImageWindow">
     <div class="floating-window-head" id="floatingWindowHead">
       <div class="floating-window-title">
-        <h2 id="floatingWindowTitle">Image preview</h2>
-        <p class="sub" id="floatingWindowSubtitle">Large view for image files.</p>
+        <div class="floating-window-title-row">
+          <h2 id="floatingWindowTitle">File preview</h2>
+          <button type="button" class="secondary copy-path-btn" id="floatingCopyPathBtn" title="Copy file path">Copy path</button>
+        </div>
+        <p class="sub" id="floatingWindowSubtitle">Large preview for the selected file.</p>
       </div>
       <div class="floating-window-actions">
         <button type="button" class="secondary window-toggle" id="floatingWindowToggleBtn" title="Collapse window">_</button>
@@ -1912,9 +2539,9 @@
     </div>
     <div class="panel-body floating-window-content" id="floatingWindowContent">
       <div class="floating-image-stage" id="floatingImageStage">
-        <div class="floating-image-empty">Open an image file to preview it here.</div>
+        <div class="floating-image-empty">Open a file to preview it here.</div>
       </div>
-      <div class="floating-image-meta" id="floatingImageMeta">No image selected.</div>
+      <div class="floating-image-meta" id="floatingImageMeta">No file selected.</div>
     </div>
     <div class="resize-handle" data-resize="n"></div>
     <div class="resize-handle" data-resize="e"></div>
@@ -2009,10 +2636,70 @@
     </div>
   </div>
 
+  <!-- Trash modal -->
+  <div id="trashModal" class="trash-overlay" style="display:none">
+    <div class="trash-box">
+      <div class="trash-head">
+        <h2>🗑 Trash</h2>
+        <div class="trash-head-actions">
+          <button type="button" class="empty-trash-btn" id="emptyTrashBtn">Empty Trash</button>
+          <button type="button" class="modal-close" id="trashModalClose">✕</button>
+        </div>
+      </div>
+      <div class="trash-summary" id="trashSummary">Loading...</div>
+      <div class="trash-list" id="trashList"></div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog (reusable) -->
+  <div id="confirmOverlay" class="confirm-overlay" style="display:none">
+    <div class="confirm-box">
+      <h3 id="confirmTitle">Confirm</h3>
+      <p id="confirmMessage">Are you sure?</p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-delete-btn" id="confirmOkBtn">Delete</button>
+        <button type="button" class="secondary" id="confirmCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Path copied</div>
+
   <script>
+    // --- Utils & UI Helpers ---
+    function showToast(message = "Path copied", duration = 2000) {
+      const toast = document.getElementById("toast");
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add("is-visible");
+      setTimeout(() => {
+        toast.classList.remove("is-visible");
+      }, duration);
+    }
+
+    async function copyToClipboard(text, message = "Path copied") {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(message);
+      } catch (err) {
+        console.error("Failed to copy: ", err);
+        showToast("Copy failed");
+      }
+    }
+
     // Initialize theme
     const savedTheme = localStorage.getItem("theme") || "auto";
     const savedStyleTheme = localStorage.getItem("styleTheme") || "default";
+    const constrainedEffectsQuery = window.matchMedia("(max-width: 900px), (pointer: coarse), (prefers-reduced-motion: reduce)");
+
+    function resolveStyleTheme(themeName) {
+      if (themeName === "lil-mike" && constrainedEffectsQuery.matches) {
+        return "default";
+      }
+      return themeName;
+    }
+
     function applyTheme(theme) {
       if (theme === "auto") {
         document.documentElement.removeAttribute("data-theme");
@@ -2024,11 +2711,27 @@
     }
 
     function applyStyleTheme(themeName) {
-      document.documentElement.setAttribute("data-style-theme", themeName);
-      localStorage.setItem("styleTheme", themeName);
+      const resolvedTheme = resolveStyleTheme(themeName);
+      document.documentElement.setAttribute("data-style-theme", resolvedTheme);
+      localStorage.setItem("styleTheme", resolvedTheme);
+      if (resolvedTheme !== "lil-mike") {
+        document.documentElement.removeAttribute("data-lil-mike-away");
+      }
       const styleThemeSelect = document.getElementById("styleThemeSelect");
-      if (styleThemeSelect && styleThemeSelect.value !== themeName) {
-        styleThemeSelect.value = themeName;
+      if (styleThemeSelect && styleThemeSelect.value !== resolvedTheme) {
+        styleThemeSelect.value = resolvedTheme;
+      }
+    }
+
+    function setLilMikeAway(isAway) {
+      if (document.documentElement.getAttribute("data-style-theme") !== "lil-mike" || constrainedEffectsQuery.matches) {
+        document.documentElement.removeAttribute("data-lil-mike-away");
+        return;
+      }
+      if (isAway) {
+        document.documentElement.setAttribute("data-lil-mike-away", "true");
+      } else {
+        document.documentElement.removeAttribute("data-lil-mike-away");
       }
     }
 
@@ -2067,6 +2770,7 @@
     const floatingWindowHeadEl = document.getElementById("floatingWindowHead");
     const floatingWindowToggleBtn = document.getElementById("floatingWindowToggleBtn");
     const floatingWindowCloseBtn = document.getElementById("floatingWindowCloseBtn");
+    const floatingCopyPathBtn = document.getElementById("floatingCopyPathBtn");
     const floatingWindowTitleEl = document.getElementById("floatingWindowTitle");
     const floatingWindowSubtitleEl = document.getElementById("floatingWindowSubtitle");
     const floatingImageStageEl = document.getElementById("floatingImageStage");
@@ -2097,6 +2801,10 @@
       rect: null,
       interaction: null,
       open: false,
+    };
+    const floatingPreviewState = {
+      fileKey: "",
+      mode: "",
     };
     const mapRootId = "root-home";
     const mapState = {
@@ -2159,11 +2867,11 @@
 
     function initializeFloatingWindow() {
       if (isMobileLayout()) return;
-      const width = Math.min(500, window.innerWidth - 24);
-      const height = Math.min(500, window.innerHeight - 24);
+      const width = Math.min(1100, window.innerWidth - 24);
+      const height = Math.min(1178, window.innerHeight - 24);
       applyFloatingWindowRect({
-        left: window.innerWidth - width - 12,
-        top: 12,
+        left: Math.max(12, (window.innerWidth - width) / 2),
+        top: Math.max(12, (window.innerHeight - height) / 2),
         width,
         height,
       });
@@ -2179,6 +2887,7 @@
     function closeFloatingImageWindow() {
       floatingWindowState.open = false;
       floatingImageWindowEl.classList.remove("is-open");
+      floatingImageStageEl.classList.remove("is-document");
       setFloatingWindowMinimized(false);
     }
 
@@ -2186,6 +2895,12 @@
       floatingWindowState.open = true;
       floatingImageWindowEl.classList.add("is-open");
       if (!floatingWindowState.rect && !isMobileLayout()) initializeFloatingWindow();
+    }
+
+    async function copyFloatingPreviewPath() {
+      if (!cf.path) return;
+      const pathToCopy = cf.absolutePath || cf.path;
+      copyToClipboard(pathToCopy);
     }
 
     function startWindowInteraction(event, mode, edge = "") {
@@ -2303,6 +3018,230 @@
 
     function isMarkdownFile(name) {
       return /\.(md|markdown)$/i.test(name || "");
+    }
+
+    function isHtmlFile(name) {
+      return /\.(html|htm|xhtml)$/i.test(name || "");
+    }
+
+    function isJsonFile(name) {
+      return /\.(json|geojson|har|webmanifest)$/i.test(name || "");
+    }
+
+    function isJsonLinesFile(name) {
+      return /\.(jsonl|ndjson)$/i.test(name || "");
+    }
+
+    function isXmlLikeFile(name) {
+      return /\.(xml|svg|plist|rss|atom)$/i.test(name || "");
+    }
+
+    function looksLikeJson(text) {
+      const value = String(text || "").trim();
+      return value.startsWith("{") || value.startsWith("[");
+    }
+
+    function prettyFormatJson(text) {
+      try {
+        return JSON.stringify(JSON.parse(String(text || "")), null, 2);
+      } catch {
+        return null;
+      }
+    }
+
+    function prettyFormatJsonLines(text) {
+      const lines = String(text || "").split(/\r?\n/);
+      const records = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          records.push(JSON.stringify(JSON.parse(trimmed), null, 2));
+        } catch {
+          return null;
+        }
+      }
+      if (!records.length) return "";
+      return records.map((record, idx) => `Record ${idx + 1}\n${record}`).join("\n\n");
+    }
+
+    function prettyFormatXml(text) {
+      const source = String(text || "").trim();
+      if (!source) return "";
+      const normalized = source.replace(/>\s*</g, "><").replace(/(>)(<)(\/*)/g, "$1\n$2$3");
+      const lines = normalized.split("\n");
+      let depth = 0;
+      const formatted = [];
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) continue;
+        if (/^<\//.test(line)) depth = Math.max(depth - 1, 0);
+        formatted.push(`${"  ".repeat(depth)}${line}`);
+        if (/^<[^!?/][^>]*[^/]?>$/.test(line) && !/^<[^>]+>.*<\/[^>]+>$/.test(line)) {
+          depth += 1;
+        }
+      }
+      return formatted.join("\n");
+    }
+
+    function getStructuredPreview(content, name) {
+      if (isJsonLinesFile(name)) {
+        const formatted = prettyFormatJsonLines(content);
+        return formatted ? { label: "Formatted", content: formatted } : null;
+      }
+      if (isJsonFile(name) || looksLikeJson(content)) {
+        const formatted = prettyFormatJson(content);
+        return formatted ? { label: "Formatted", content: formatted } : null;
+      }
+      if (isXmlLikeFile(name)) {
+        const formatted = prettyFormatXml(content);
+        return formatted ? { label: "Formatted", content: formatted } : null;
+      }
+      return null;
+    }
+
+    function getHtmlSourcePreview(content) {
+      return prettyFormatXml(content) || String(content || "");
+    }
+
+    function buildFloatingTabs(tabs, activeMode) {
+      return `
+        <div class="floating-preview-tabs">
+          ${tabs.map(tab => `
+            <button
+              type="button"
+              class="secondary floating-preview-tab ${tab.mode === activeMode ? "is-active" : ""}"
+              data-preview-mode="${esc(tab.mode)}"
+            >${esc(tab.label)}</button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function detectSourceLanguage(name, content) {
+      if (isJsonLinesFile(name) || isJsonFile(name) || looksLikeJson(content)) return "json";
+      if (isHtmlFile(name)) return "html";
+      if (isXmlLikeFile(name)) return "xml";
+      return "text";
+    }
+
+    function highlightJsonSource(text) {
+      const json = esc(String(text || ""));
+      return json
+        .replace(/&quot;([^"\\]|\\.)*&quot;(?=\s*:)/g, match => `<span class="syntax-key">${match}</span>`)
+        .replace(/(:\s*)(&quot;([^"\\]|\\.)*&quot;)/g, (_, prefix, value) => `${prefix}<span class="syntax-string">${value}</span>`)
+        .replace(/\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/g, match => `<span class="syntax-number">${match}</span>`)
+        .replace(/\b(true|false)\b/g, match => `<span class="syntax-bool">${match}</span>`)
+        .replace(/\bnull\b/g, match => `<span class="syntax-null">${match}</span>`)
+        .replace(/([{}\[\],:])/g, `<span class="syntax-punct">$1</span>`);
+    }
+
+    function highlightXmlSource(text) {
+      let html = esc(String(text || ""));
+      html = html.replace(/(&lt;!--[\s\S]*?--&gt;)/g, `<span class="syntax-comment">$1</span>`);
+      html = html.replace(/(&lt;\/?)([A-Za-z_][\w:.-]*)/g, `$1<span class="syntax-tag">$2</span>`);
+      html = html.replace(/(\s)([A-Za-z_:][\w:.-]*)(=)(&quot;.*?&quot;)/g, `$1<span class="syntax-attr">$2</span>$3<span class="syntax-string">$4</span>`);
+      html = html.replace(/(&lt;|&gt;|\/&gt;)/g, `<span class="syntax-punct">$1</span>`);
+      return html;
+    }
+
+    function renderHighlightedSource(text, language) {
+      let html = esc(String(text || ""));
+      if (language === "json") {
+        html = highlightJsonSource(text);
+      } else if (language === "html" || language === "xml") {
+        html = highlightXmlSource(text);
+      }
+      return `<pre class="syntax-block"><code>${html}</code></pre>`;
+    }
+
+    function renderJsonPrimitive(value) {
+      if (value === null) return `<span class="json-tree-value json-tree-value--null">null</span>`;
+      if (typeof value === "string") return `<span class="json-tree-value json-tree-value--string">"${esc(value)}"</span>`;
+      if (typeof value === "number") return `<span class="json-tree-value json-tree-value--number">${esc(value)}</span>`;
+      if (typeof value === "boolean") return `<span class="json-tree-value json-tree-value--bool">${esc(value)}</span>`;
+      return `<span class="json-tree-value">${esc(String(value))}</span>`;
+    }
+
+    function renderJsonTreeNode(label, value, open = false) {
+      if (Array.isArray(value)) {
+        const children = value.length
+          ? value.map((item, idx) => renderJsonTreeNode(String(idx), item, false)).join("")
+          : `<div class="json-tree-empty">empty array</div>`;
+        return `
+          <details class="json-tree-node"${open ? " open" : ""}>
+            <summary class="json-tree-summary">
+              <span class="json-tree-chevron">▶</span>
+              <span class="json-tree-key">${esc(label)}</span>
+              <span class="json-tree-sep">[]</span>
+              <span class="json-tree-meta">${value.length} items</span>
+            </summary>
+            <div class="json-tree-children">${children}</div>
+          </details>
+        `;
+      }
+      if (value && typeof value === "object") {
+        const entries = Object.entries(value);
+        const children = entries.length
+          ? entries.map(([key, child]) => renderJsonTreeNode(key, child, false)).join("")
+          : `<div class="json-tree-empty">empty object</div>`;
+        return `
+          <details class="json-tree-node"${open ? " open" : ""}>
+            <summary class="json-tree-summary">
+              <span class="json-tree-chevron">▶</span>
+              <span class="json-tree-key">${esc(label)}</span>
+              <span class="json-tree-sep">{ }</span>
+              <span class="json-tree-meta">${entries.length} keys</span>
+            </summary>
+            <div class="json-tree-children">${children}</div>
+          </details>
+        `;
+      }
+      return `
+        <div class="json-tree-leaf">
+          <span class="json-tree-key">${esc(label)}</span>
+          <span class="json-tree-sep">:</span>
+          ${renderJsonPrimitive(value)}
+        </div>
+      `;
+    }
+
+    function getStructuredData(content, name) {
+      if (isJsonLinesFile(name)) {
+        const lines = String(content || "").split(/\r?\n/);
+        const records = [];
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          try {
+            records.push(JSON.parse(trimmed));
+          } catch {
+            return null;
+          }
+        }
+        return records.length ? { type: "jsonl", data: records } : null;
+      }
+      if (isJsonFile(name) || looksLikeJson(content)) {
+        try {
+          return { type: "json", data: JSON.parse(String(content || "")) };
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    function renderStructuredTree(content, name) {
+      const structured = getStructuredData(content, name);
+      if (!structured) return "";
+      if (structured.type === "jsonl") {
+        return `
+          <div class="json-tree">
+            ${structured.data.map((record, idx) => renderJsonTreeNode(`Record ${idx + 1}`, record, idx < 2)).join("")}
+          </div>
+        `;
+      }
+      return `<div class="json-tree">${renderJsonTreeNode("Root", structured.data, true)}</div>`;
     }
 
     function sanitizeUrl(url) {
@@ -2866,10 +3805,17 @@
       favoritesEl.innerHTML = state.favorites.map(item => `
         <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-kind="${esc(item.kind)}">
           <div class="title"><span>${esc(item.label)}</span><span class="badge">${esc(item.kind)}</span></div>
-          <div class="path">${esc(item.root)} / ${esc(item.path)}</div>
+          <div class="path clickable-path" title="Click to copy path">${esc(item.root)} / ${esc(item.path)}</div>
         </div>
       `).join("");
       favoritesEl.querySelectorAll(".row").forEach(row => {
+        const pathEl = row.querySelector(".clickable-path");
+        if (pathEl) {
+          pathEl.addEventListener("click", (e) => {
+            e.stopPropagation();
+            copyToClipboard(`${row.dataset.root}/${row.dataset.path}`);
+          });
+        }
         row.addEventListener("click", () => {
           if (row.dataset.kind === "dir") {
             setMobilePanel("browse");
@@ -2900,7 +3846,8 @@
       const items = [];
       if (data.parent !== null && path) {
         items.push(`
-          <div class="entry" data-root="${esc(root)}" data-path="${esc(data.parent)}" data-kind="dir">
+          <div class="entry" data-root="${esc(root)}" data-path="${esc(data.parent)}" data-kind="dir" data-is-parent="true">
+            <div class="select-check"></div>
             <div>
               <div class="name folder">..</div>
               <div class="detail">Up one level</div>
@@ -2908,18 +3855,37 @@
           </div>
         `);
       }
-      items.push(...data.entries.map(entry => `
-        <div class="entry" data-root="${esc(root)}" data-path="${esc(entry.path)}" data-kind="${entry.is_dir ? "dir" : "file"}">
-          <div>
-            <div class="name ${entry.is_dir ? "folder" : "file"}">${esc(entry.name)}</div>
-            <div class="detail">${entry.is_dir ? "Directory" : `${fmtBytes(entry.size)} • ${esc(entry.kind)}`} • ${esc(entry.mtime)}</div>
+      items.push(...data.entries.map(entry => {
+        const key = `${root}:${entry.path}`;
+        const isSelected = selectionState.selected.has(key);
+        return `
+          <div class="entry ${isSelected ? "is-selected" : ""}" data-root="${esc(root)}" data-path="${esc(entry.path)}" data-kind="${entry.is_dir ? "dir" : "file"}" data-name="${esc(entry.name)}">
+            <div class="select-check ${isSelected ? "is-checked" : ""}">${isSelected ? "✓" : ""}</div>
+            <div>
+              <div class="name ${entry.is_dir ? "folder" : "file"}">${esc(entry.name)}</div>
+              <div class="detail">${entry.is_dir ? "Directory" : `${fmtBytes(entry.size)} • ${esc(entry.kind)}`} • ${esc(entry.mtime)}</div>
+            </div>
+            <div class="badge">${entry.is_dir ? "open" : "preview"}</div>
           </div>
-          <div class="badge">${entry.is_dir ? "open" : "preview"}</div>
-        </div>
-      `));
+        `;
+      }));
       treeEl.innerHTML = items.join("") || `<div class="empty">Directory is empty.</div>`;
       treeEl.querySelectorAll(".entry").forEach(entry => {
-        entry.addEventListener("click", () => {
+        entry.addEventListener("click", (e) => {
+          if (selectionState.active) {
+            // In selection mode, clicking toggles selection (except ".." parent)
+            if (entry.dataset.isParent === "true") {
+              openDir(entry.dataset.root, entry.dataset.path);
+              return;
+            }
+            const entryRoot = entry.dataset.root;
+            const entryPath = entry.dataset.path;
+            const entryName = entry.dataset.name || "";
+            const isDir = entry.dataset.kind === "dir";
+            toggleSelection(entryRoot, entryPath, entryName, isDir);
+            rerenderTreeSelectionState();
+            return;
+          }
           if (entry.dataset.kind === "dir") {
             setMobilePanel("browse");
             openDir(entry.dataset.root, entry.dataset.path);
@@ -2928,6 +3894,15 @@
             openFile(entry.dataset.root, entry.dataset.path);
           }
         });
+
+        // Long-press for selection mode on mobile
+        entry.addEventListener("pointerdown", (e) => {
+          if (entry.dataset.isParent === "true") return;
+          handleEntryPointerDown(e, entry);
+        });
+        entry.addEventListener("pointerup", handleEntryPointerUp);
+        entry.addEventListener("pointerleave", handleEntryPointerLeave);
+        entry.addEventListener("pointercancel", handleEntryPointerLeave);
       });
     }
 
@@ -2947,46 +3922,163 @@
       });
     }
 
+    function getDefaultFloatingPreviewMode() {
+      if (isHtmlFile(cf.name)) return "preview";
+      if (getStructuredData(cf.content || "", cf.name)) return "structure";
+      if (getStructuredPreview(cf.content || "", cf.name)) return "formatted";
+      return "source";
+    }
+
+    function ensureFloatingPreviewState() {
+      const fileKey = cf.absolutePath || cf.path || cf.name || "";
+      if (floatingPreviewState.fileKey !== fileKey) {
+        floatingPreviewState.fileKey = fileKey;
+        floatingPreviewState.mode = getDefaultFloatingPreviewMode();
+      }
+    }
+
+    function updateFloatingPreviewWindow() {
+      ensureFloatingPreviewState();
+
+      let stageHtml = "";
+      const contentMeta = `${fmtBytes(cf.size || 0)} • ${cf.mtime || ""}`;
+      const structuredData = getStructuredData(cf.content || "", cf.name);
+      const structured = getStructuredPreview(cf.content || "", cf.name);
+      const sourceLanguage = detectSourceLanguage(cf.name, cf.content || "");
+
+      floatingWindowTitleEl.textContent = cf.name || "File preview";
+      floatingWindowSubtitleEl.textContent = cf.path || "Large preview for the selected file.";
+      floatingImageMetaEl.textContent = contentMeta;
+      floatingCopyPathBtn.disabled = !cf.path;
+      floatingCopyPathBtn.textContent = "Copy path";
+
+      if (cf.kind === "image" && cf.rawUrl) {
+        floatingImageStageEl.classList.remove("is-document");
+        stageHtml = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" />`;
+      } else if (isHtmlFile(cf.name)) {
+        floatingImageStageEl.classList.add("is-document");
+        const activeMode = floatingPreviewState.mode === "source" ? "source" : "preview";
+        const tabs = [
+          { mode: "preview", label: "Preview" },
+          { mode: "source", label: "Source" },
+        ];
+        const body = activeMode === "preview"
+          ? `<div class="floating-preview-browser-wrap"><iframe id="floatingHtmlPreviewFrame" class="floating-preview-browser" sandbox="allow-scripts allow-same-origin allow-forms"></iframe></div>`
+          : `<div class="floating-preview-scroll">${renderHighlightedSource(getHtmlSourcePreview(cf.content || ""), "html")}</div>`;
+        stageHtml = `<div class="floating-preview-shell">${buildFloatingTabs(tabs, activeMode)}${body}</div>`;
+      } else if (isMarkdownFile(cf.name)) {
+        floatingImageStageEl.classList.add("is-document");
+        stageHtml = `<div class="floating-preview-scroll"><div class="markdown-preview">${renderMarkdownPreview(cf.content || "")}</div></div>`;
+      } else if (structuredData) {
+        floatingImageStageEl.classList.add("is-document");
+        const activeMode = floatingPreviewState.mode === "source" ? "source" : "structure";
+        const tabs = [
+          { mode: "structure", label: "Structure" },
+          { mode: "source", label: "Source" },
+        ];
+        const body = activeMode === "structure"
+          ? renderStructuredTree(cf.content || "", cf.name)
+          : `<div class="floating-preview-scroll">${renderHighlightedSource(cf.content || "", sourceLanguage)}</div>`;
+        stageHtml = `<div class="floating-preview-shell">${buildFloatingTabs(tabs, activeMode)}${body}</div>`;
+      } else if (structured) {
+        floatingImageStageEl.classList.add("is-document");
+        const activeMode = floatingPreviewState.mode === "source" ? "source" : "formatted";
+        const tabs = [
+          { mode: "formatted", label: structured.label },
+          { mode: "source", label: "Source" },
+        ];
+        const body = activeMode === "formatted"
+          ? `<div class="floating-preview-scroll">${renderHighlightedSource(structured.content, sourceLanguage)}</div>`
+          : `<div class="floating-preview-scroll">${renderHighlightedSource(cf.content || "", sourceLanguage)}</div>`;
+        stageHtml = `<div class="floating-preview-shell">${buildFloatingTabs(tabs, activeMode)}${body}</div>`;
+      } else {
+        floatingImageStageEl.classList.add("is-document");
+        const previewText = cf.kind === "binary"
+          ? `<pre>Binary preview disabled.</pre>`
+          : renderHighlightedSource(cf.content || "", sourceLanguage);
+        stageHtml = `<div class="floating-preview-scroll">${previewText}</div>`;
+      }
+
+      floatingImageStageEl.innerHTML = stageHtml;
+
+      const htmlFrame = document.getElementById("floatingHtmlPreviewFrame");
+      if (htmlFrame) {
+        htmlFrame.srcdoc = cf.content || "";
+      }
+
+      floatingImageStageEl.querySelectorAll("[data-preview-mode]").forEach(button => {
+        button.addEventListener("click", () => {
+          floatingPreviewState.mode = button.dataset.previewMode || getDefaultFloatingPreviewMode();
+          updateFloatingPreviewWindow();
+        });
+      });
+
+      openFloatingImageWindow();
+    }
+
+    function renderFloatingPreviewContent() {
+      if (isMobileLayout()) {
+        closeFloatingImageWindow();
+        return "";
+      }
+
+      let inlineHint = "Preview opened in separate window.";
+
+      if (cf.kind === "image" && cf.rawUrl) {
+        inlineHint = "Image preview opened in separate window.";
+      } else if (isHtmlFile(cf.name)) {
+        inlineHint = "HTML preview opened in separate window.";
+      } else if (getStructuredData(cf.content || "", cf.name)) {
+        inlineHint = "Structured explorer opened in separate window.";
+      } else if (getStructuredPreview(cf.content || "", cf.name)) {
+        inlineHint = "Structured preview opened in separate window.";
+      }
+
+      updateFloatingPreviewWindow();
+
+      return `
+        <div class="preview-meta" style="margin-bottom:10px;">${inlineHint}</div>
+        <button type="button" id="openFloatingImageBtn">Open floating preview</button>
+      `;
+    }
+
     // Current file state for edit mode
-    const cf = { root: null, path: null, name: null, content: null, truncated: false, kind: null, rawUrl: null };
+    const cf = { root: null, path: null, absolutePath: null, name: null, content: null, truncated: false, kind: null, rawUrl: null };
 
     function renderPreviewView() {
       let body = "";
       const mobileBackBtn = isMobileLayout()
         ? `<button type="button" class="mobile-back-btn" id="mobileBackBtn">&larr; Back</button>`
         : "";
-      if (cf.kind === "image" && cf.rawUrl) {
-        if (isMobileLayout()) {
-          // Inline image on mobile — no floating window
+      if (isMobileLayout()) {
+        if (cf.kind === "image" && cf.rawUrl) {
           body = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" style="margin-top:12px;" />`;
         } else {
-          body = `
-            <div class="preview-meta" style="margin-bottom:10px;">Image preview opened in separate window.</div>
-            <button type="button" id="openFloatingImageBtn">Open large image preview</button>
-          `;
-          floatingWindowTitleEl.textContent = cf.name;
-          floatingWindowSubtitleEl.textContent = cf.path;
-          floatingImageStageEl.innerHTML = `<img src="${esc(cf.rawUrl)}" alt="${esc(cf.name)}" />`;
-          floatingImageMetaEl.textContent = `${fmtBytes(cf.size || 0)} • ${cf.mtime || ""}`;
-          openFloatingImageWindow();
+          body = isMarkdownFile(cf.name)
+            ? `<div class="markdown-preview">${renderMarkdownPreview(cf.content || "")}</div>`
+            : `<pre>${esc(cf.content || "")}</pre>`;
         }
       } else {
-        body = isMarkdownFile(cf.name)
-          ? `<div class="markdown-preview">${renderMarkdownPreview(cf.content || "")}</div>`
-          : `<pre>${esc(cf.content || "")}</pre>`;
-        if (!isMobileLayout()) closeFloatingImageWindow();
+        body = renderFloatingPreviewContent();
       }
       const truncWarn = cf.truncated ? `<div class="badge" style="margin-bottom:8px;">preview truncated — full file loaded on edit</div>` : "";
       const editBtn = (cf.kind === "text") ? `<button type="button" id="editFileBtn" style="margin-top:10px;">✏️ Edit</button>` : "";
+      const fullPath = cf.absolutePath || cf.path;
       previewEl.innerHTML = `
         ${mobileBackBtn}
         <h3>${esc(cf.name)}</h3>
-        <div class="preview-meta">${esc(cf.path)}</div>
+        <div class="preview-meta clickable-path" id="previewPath" title="Click to copy full path">${esc(cf.path)}</div>
         <div class="preview-meta">${fmtBytes(cf.size || 0)} • ${esc(cf.kind)} • ${esc(cf.mtime || "")}</div>
         ${editBtn}
         ${truncWarn}
         ${body}
       `;
+
+      const previewPathEl = document.getElementById("previewPath");
+      if (previewPathEl) {
+        previewPathEl.addEventListener("click", () => copyToClipboard(fullPath));
+      }
+
       const editBtn2 = document.getElementById("editFileBtn");
       if (editBtn2) editBtn2.addEventListener("click", enterEditMode);
       const openFloatingImageBtn = document.getElementById("openFloatingImageBtn");
@@ -3076,6 +4168,7 @@
       }
       cf.root = root;
       cf.path = data.path;
+      cf.absolutePath = data.absolute_path || null;
       cf.name = data.name;
       cf.content = data.preview || null;
       cf.truncated = !!data.truncated;
@@ -3093,13 +4186,20 @@
       const data = await res.json();
       const items = data.items || [];
       recentEl.innerHTML = items.map(item => `
-        <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}">
+        <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-abs="${esc(item.absolute_path)}">
           <div class="title"><span>${esc(item.path.split("/").pop())}</span><span class="badge">${esc(item.label)}</span></div>
-          <div class="path">${esc(item.absolute_path)}</div>
+          <div class="path clickable-path" title="Click to copy path">${esc(item.absolute_path)}</div>
           <div class="path">${esc(item.mtime)} • ${fmtBytes(item.size)}</div>
         </div>
       `).join("") || `<div class="empty">No recent files found.</div>`;
       recentEl.querySelectorAll(".row").forEach(row => {
+        const pathEl = row.querySelector(".clickable-path");
+        if (pathEl) {
+          pathEl.addEventListener("click", (e) => {
+            e.stopPropagation();
+            copyToClipboard(row.dataset.abs);
+          });
+        }
         row.addEventListener("click", () => {
           setMobilePanel("preview");
           openFile(row.dataset.root, row.dataset.path);
@@ -3128,13 +4228,20 @@
         browseFeed.style.display = "none";
         searchResultsEl.style.display = "block";
         searchResultsList.innerHTML = data.results.map(item => `
-          <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}">
+          <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-abs="${esc(item.absolute_path || item.path)}">
             <div class="title"><span>${esc(item.name)}</span><span class="badge">${esc(item.root)}</span></div>
-            <div class="path">${esc(item.path)}</div>
+            <div class="path clickable-path" title="Click to copy path">${esc(item.path)}</div>
             <div class="path">${fmtBytes(item.size)}</div>
           </div>
         `).join("");
         searchResultsList.querySelectorAll(".row").forEach(row => {
+          const pathEl = row.querySelector(".clickable-path");
+          if (pathEl) {
+            pathEl.addEventListener("click", (e) => {
+              e.stopPropagation();
+              copyToClipboard(row.dataset.abs);
+            });
+          }
           row.addEventListener("click", () => {
             setMobilePanel("preview");
             openFile(row.dataset.root, row.dataset.path);
@@ -3268,6 +4375,7 @@
     window.addEventListener("pointercancel", stopWindowInteraction);
     floatingWindowToggleBtn.addEventListener("click", () => setFloatingWindowMinimized(!floatingWindowState.minimized));
     floatingWindowCloseBtn.addEventListener("click", closeFloatingImageWindow);
+    floatingCopyPathBtn.addEventListener("click", copyFloatingPreviewPath);
     window.addEventListener("resize", () => {
       if (mapState.open) {
         fitMapToStage();
@@ -3342,6 +4450,23 @@
       if ((localStorage.getItem("theme") || "auto") === "auto") {
         updateThemeToggleButton();
       }
+    });
+    constrainedEffectsQuery.addEventListener("change", () => {
+      applyStyleTheme(localStorage.getItem("styleTheme") || "default");
+    });
+    window.addEventListener("mouseout", event => {
+      if (!event.relatedTarget && !event.toElement) {
+        setLilMikeAway(true);
+      }
+    });
+    window.addEventListener("mouseover", () => {
+      setLilMikeAway(false);
+    });
+    window.addEventListener("blur", () => {
+      setLilMikeAway(true);
+    });
+    window.addEventListener("focus", () => {
+      setLilMikeAway(false);
     });
 
     const searchInput = document.getElementById("searchInput");
@@ -3456,6 +4581,351 @@
         mdStatusEl.textContent = "❌ " + e.message;
       }
       mdSaveBtn.disabled = false;
+    });
+
+    // --- Selection mode & deletion ---
+    const selectionState = {
+      active: false,
+      selected: new Map(), // key: "root:path" => {root, path, name, is_dir}
+    };
+
+    const selectionToolbarEl = document.getElementById("selectionToolbar");
+    const selectionCountEl = document.getElementById("selectionCount");
+    const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+    const cancelSelectionBtn = document.getElementById("cancelSelectionBtn");
+    const selectModeBtn = document.getElementById("selectModeBtn");
+    const trashBtnEl = document.getElementById("trashBtn");
+    const trashModalEl = document.getElementById("trashModal");
+    const trashListEl = document.getElementById("trashList");
+    const trashSummaryEl = document.getElementById("trashSummary");
+    const emptyTrashBtn = document.getElementById("emptyTrashBtn");
+    const trashModalCloseBtn = document.getElementById("trashModalClose");
+    const confirmOverlayEl = document.getElementById("confirmOverlay");
+    const confirmTitleEl = document.getElementById("confirmTitle");
+    const confirmMessageEl = document.getElementById("confirmMessage");
+    const confirmOkBtn = document.getElementById("confirmOkBtn");
+    const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+
+    let confirmResolve = null;
+
+    function showConfirm(title, message, okLabel) {
+      confirmTitleEl.textContent = title;
+      confirmMessageEl.textContent = message;
+      confirmOkBtn.textContent = okLabel || "Delete";
+      confirmOverlayEl.style.display = "flex";
+      return new Promise(resolve => {
+        confirmResolve = resolve;
+      });
+    }
+
+    function hideConfirm() {
+      confirmOverlayEl.style.display = "none";
+      if (confirmResolve) {
+        confirmResolve(false);
+        confirmResolve = null;
+      }
+    }
+
+    confirmOkBtn.addEventListener("click", () => {
+      confirmOverlayEl.style.display = "none";
+      if (confirmResolve) {
+        const r = confirmResolve;
+        confirmResolve = null;
+        r(true);
+      }
+    });
+
+    confirmCancelBtn.addEventListener("click", hideConfirm);
+    confirmOverlayEl.addEventListener("click", (e) => {
+      if (e.target === confirmOverlayEl) hideConfirm();
+    });
+
+    function enterSelectionMode() {
+      selectionState.active = true;
+      selectionState.selected.clear();
+      document.body.classList.add("selection-mode");
+      selectionToolbarEl.classList.add("is-active");
+      selectModeBtn.textContent = "Exit Select";
+      updateSelectionCount();
+      rerenderTreeSelectionState();
+    }
+
+    function exitSelectionMode() {
+      selectionState.active = false;
+      selectionState.selected.clear();
+      document.body.classList.remove("selection-mode");
+      selectionToolbarEl.classList.remove("is-active");
+      selectModeBtn.textContent = "Select";
+      rerenderTreeSelectionState();
+    }
+
+    function toggleSelection(root, path, name, is_dir) {
+      const key = `${root}:${path}`;
+      if (selectionState.selected.has(key)) {
+        selectionState.selected.delete(key);
+      } else {
+        selectionState.selected.set(key, { root, path, name, is_dir });
+      }
+      updateSelectionCount();
+      if (selectionState.selected.size === 0 && selectionState.active) {
+        // Keep selection mode active but update count
+      }
+    }
+
+    function updateSelectionCount() {
+      const count = selectionState.selected.size;
+      selectionCountEl.textContent = `${count} selected`;
+      deleteSelectedBtn.disabled = count === 0;
+    }
+
+    function rerenderTreeSelectionState() {
+      treeEl.querySelectorAll(".entry").forEach(entry => {
+        const key = `${entry.dataset.root}:${entry.dataset.path}`;
+        const isSelected = selectionState.selected.has(key);
+        entry.classList.toggle("is-selected", isSelected);
+        const check = entry.querySelector(".select-check");
+        if (check) {
+          check.classList.toggle("is-checked", isSelected);
+          check.innerHTML = isSelected ? "✓" : "";
+        }
+      });
+    }
+
+    selectModeBtn.addEventListener("click", () => {
+      if (selectionState.active) {
+        exitSelectionMode();
+      } else {
+        enterSelectionMode();
+      }
+    });
+
+    cancelSelectionBtn.addEventListener("click", exitSelectionMode);
+
+    deleteSelectedBtn.addEventListener("click", async () => {
+      const count = selectionState.selected.size;
+      if (count === 0) return;
+      const confirmed = await showConfirm(
+        "Move to Trash",
+        `Move ${count} item${count > 1 ? "s" : ""} to trash?`,
+        "Delete"
+      );
+      if (!confirmed) return;
+
+      const items = Array.from(selectionState.selected.values()).map(item => ({
+        root: item.root,
+        path: item.path,
+      }));
+
+      try {
+        const res = await fetch("/api/files/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const successCount = (data.results || []).filter(r => r.ok).length;
+          const failCount = (data.results || []).filter(r => !r.ok).length;
+          treeStatusEl.textContent = failCount
+            ? `${successCount} moved to trash, ${failCount} failed`
+            : `${successCount} item${successCount > 1 ? "s" : ""} moved to trash`;
+          setTimeout(() => { treeStatusEl.textContent = ""; }, 4000);
+        }
+      } catch (e) {
+        treeStatusEl.textContent = "Delete failed: " + e.message;
+      }
+
+      exitSelectionMode();
+      openDir(state.currentRoot, state.currentPath);
+      loadRecent();
+    });
+
+    // Long-press to enter selection mode (mobile)
+    let longPressTimer = null;
+    let longPressEntry = null;
+
+    function handleEntryPointerDown(event, entry) {
+      if (entry.dataset.isParent === "true") return;
+      longPressEntry = entry;
+      longPressTimer = setTimeout(() => {
+        if (!selectionState.active) {
+          enterSelectionMode();
+        }
+        const root = entry.dataset.root;
+        const path = entry.dataset.path;
+        const name = entry.querySelector(".name")?.textContent || "";
+        const is_dir = entry.dataset.kind === "dir";
+        toggleSelection(root, path, name, is_dir);
+        rerenderTreeSelectionState();
+        longPressEntry = null;
+      }, 500);
+    }
+
+    function handleEntryPointerUp() {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      longPressEntry = null;
+    }
+
+    function handleEntryPointerLeave() {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      longPressEntry = null;
+    }
+
+    // --- Trash modal ---
+    async function openTrashModal() {
+      trashModalEl.style.display = "flex";
+      trashSummaryEl.textContent = "Loading...";
+      trashListEl.innerHTML = "";
+      await loadTrashContents();
+    }
+
+    function closeTrashModal() {
+      trashModalEl.style.display = "none";
+    }
+
+    async function loadTrashContents() {
+      try {
+        const res = await fetch("/api/trash", { cache: "no-store" });
+        const data = await res.json();
+        if (!data.ok) {
+          trashSummaryEl.textContent = "Failed to load trash";
+          return;
+        }
+        const items = data.items || [];
+        const totalSize = data.total_size || 0;
+        trashSummaryEl.textContent = items.length
+          ? `${items.length} item${items.length > 1 ? "s" : ""} in trash (${fmtBytes(totalSize)})`
+          : "Trash is empty";
+        emptyTrashBtn.disabled = items.length === 0;
+
+        if (!items.length) {
+          trashListEl.innerHTML = `<div class="trash-empty-state">Trash is empty. Deleted files will appear here.</div>`;
+          return;
+        }
+
+        trashListEl.innerHTML = items.map(item => `
+          <div class="trash-item" data-id="${esc(item.id)}">
+            <div class="trash-item-info">
+              <div class="trash-item-name">${item.is_dir ? "📁" : "📄"} ${esc(item.name)}</div>
+              <div class="trash-item-meta">
+                From: ${esc(item.original_root)} / ${esc(item.original_path)}
+              </div>
+              <div class="trash-item-meta">
+                Deleted: ${esc(item.deleted_at)} • ${fmtBytes(item.size)}
+              </div>
+            </div>
+            <div class="trash-item-actions">
+              <button type="button" class="secondary restore-btn" data-id="${esc(item.id)}">Restore</button>
+              <button type="button" class="perm-delete-btn" data-id="${esc(item.id)}">Delete</button>
+            </div>
+          </div>
+        `).join("");
+
+        trashListEl.querySelectorAll(".restore-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const itemId = btn.dataset.id;
+            btn.disabled = true;
+            btn.textContent = "Restoring...";
+            try {
+              const res = await fetch("/api/trash/restore", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items: [itemId] }),
+              });
+              const data = await res.json();
+              const result = (data.results || [])[0];
+              if (result && result.ok) {
+                await loadTrashContents();
+                openDir(state.currentRoot, state.currentPath);
+                loadRecent();
+              } else {
+                btn.textContent = result?.message || "Failed";
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = "Restore"; }, 2000);
+              }
+            } catch (e) {
+              btn.textContent = "Error";
+              btn.disabled = false;
+              setTimeout(() => { btn.textContent = "Restore"; }, 2000);
+            }
+          });
+        });
+
+        trashListEl.querySelectorAll(".perm-delete-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const itemId = btn.dataset.id;
+            const confirmed = await showConfirm(
+              "Permanently Delete",
+              "This cannot be undone. Delete this item forever?",
+              "Delete Forever"
+            );
+            if (!confirmed) return;
+            btn.disabled = true;
+            btn.textContent = "Deleting...";
+            try {
+              const res = await fetch("/api/trash/delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items: [itemId] }),
+              });
+              await res.json();
+              await loadTrashContents();
+            } catch {
+              btn.textContent = "Error";
+              btn.disabled = false;
+              setTimeout(() => { btn.textContent = "Delete"; }, 2000);
+            }
+          });
+        });
+      } catch (e) {
+        trashSummaryEl.textContent = "Error loading trash: " + e.message;
+      }
+    }
+
+    trashBtnEl.addEventListener("click", openTrashModal);
+    trashModalCloseBtn.addEventListener("click", closeTrashModal);
+    trashModalEl.addEventListener("click", (e) => {
+      if (e.target === trashModalEl) closeTrashModal();
+    });
+
+    emptyTrashBtn.addEventListener("click", async () => {
+      const confirmed = await showConfirm(
+        "Empty Trash",
+        "Permanently delete ALL items in trash? This cannot be undone.",
+        "Empty Trash"
+      );
+      if (!confirmed) return;
+      emptyTrashBtn.disabled = true;
+      emptyTrashBtn.textContent = "Emptying...";
+      try {
+        await fetch("/api/trash/empty", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        await loadTrashContents();
+      } catch {
+        // ignore
+      }
+      emptyTrashBtn.disabled = false;
+      emptyTrashBtn.textContent = "Empty Trash";
+    });
+
+    // Escape key closes trash modal
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        if (confirmOverlayEl.style.display !== "none" && confirmOverlayEl.style.display) {
+          hideConfirm();
+        } else if (trashModalEl.style.display !== "none" && trashModalEl.style.display) {
+          closeTrashModal();
+        }
+      }
     });
 
     initializeFloatingWindow();
