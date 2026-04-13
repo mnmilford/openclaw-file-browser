@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 import json
+import contextlib
+import errno
+import heapq
 import mimetypes
 import os
+import queue
 import shutil
 import socket
+import sqlite3
 import subprocess
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -12,6 +18,13 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+try:
+    from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
+except Exception:  # pragma: no cover - optional dependency safety
+    FileSystemEventHandler = object
+    Observer = None
 
 
 def load_env_file(path):
@@ -49,13 +62,22 @@ def env_int(name, default):
 
 
 BASE_DIR = Path(__file__).resolve().parent
+SEARCH_INDEX_DB = BASE_DIR / "search_index.db"
+SEARCH_INDEX_LIMIT = 500
+SEARCH_INDEX_BATCH_SIZE = 250
 load_env_file(BASE_DIR / ".env")
 load_env_file(BASE_DIR / ".env.local")
+SEARCH_INDEX_SCAN_INTERVAL = env_int(
+    "OPENCLAW_FILE_BROWSER_SEARCH_RESCAN_INTERVAL",
+    1800,
+)
 INDEX_PATH = BASE_DIR / "index.html"
 CHAT_PATH = BASE_DIR / "chat.html"
 CHAT_TRANSCRIPT_PATH = BASE_DIR / "chat-transcript.html"
 FILES_PATH = BASE_DIR / "files.html"
 TRASH_DIR = BASE_DIR / ".trash"
+PRIME_DIRECTORIES_PATH = BASE_DIR / "prime_directories.json"
+FAVORITES_ORDER_PATH = BASE_DIR / "favorites_order.json"
 UPLOADS_DIR = env_path("OPENCLAW_FILE_BROWSER_UPLOADS_DIR", str(BASE_DIR / "uploads"))
 ROOT_HOME_DIR = env_path("OPENCLAW_FILE_BROWSER_HOME_DIR", "/root")
 PROJECTS_DIR = env_path(
@@ -97,6 +119,19 @@ ALLOWED_ACTIONS = {
 }
 ALLOWED_LOG_SERVICES = {OPENCLAW_SERVICE_NAME, DASHBOARD_SERVICE_NAME}
 _SPURS_CACHE = {"ts": 0.0, "data": None}
+_RECENT_CACHE = {"ts": 0.0, "limit": 0, "items": []}
+_RECENT_LOCK = threading.Lock()
+_PRIME_LOCK = threading.RLock()
+_FAVORITES_ORDER_LOCK = threading.Lock()
+RECENT_SCAN_TTL = 120
+RECENT_ROOT_IDS = (
+    "uploads",
+    "dashboard",
+    "workspace",
+    "projects",
+    "deepfield",
+    "lil-mike-memory",
+)
 TEXT_EXTENSIONS = {
     ".c", ".cc", ".cfg", ".conf", ".cpp", ".css", ".csv", ".env", ".gitignore", ".go",
     ".h", ".html", ".ini", ".java", ".js", ".json", ".jsonl", ".log", ".md", ".mjs",
@@ -164,6 +199,17 @@ WATCH_ROOTS = {
         "description": "Temporary files, image previews, and scratch outputs.",
     },
 }
+SEARCH_INDEX_ROOT_IDS = (
+    "uploads",
+    "dashboard",
+    "workspace",
+    "lil-mike-memory",
+    "deepfield",
+    "sessions",
+    "core-state",
+    "projects",
+    "opt-openclaw",
+)
 FAVORITES = [
     {
         "label": "/root",
@@ -228,6 +274,694 @@ FAVORITES = [
 ]
 
 
+class SearchIndexEventHandler(FileSystemEventHandler):
+    def __init__(self, manager):
+        super().__init__()
+        self.manager = manager
+
+    def on_created(self, event):
+        self.manager.enqueue_event("created", event.src_path, is_directory=event.is_directory)
+
+    def on_modified(self, event):
+        self.manager.enqueue_event("modified", event.src_path, is_directory=event.is_directory)
+
+    def on_deleted(self, event):
+        self.manager.enqueue_event("deleted", event.src_path, is_directory=event.is_directory)
+
+    def on_moved(self, event):
+        self.manager.enqueue_event(
+            "moved",
+            event.src_path,
+            dest_path=event.dest_path,
+            is_directory=event.is_directory,
+        )
+
+
+class SearchIndexManager:
+    def __init__(self, db_path):
+        self.db_path = Path(db_path)
+        self._lock = threading.RLock()
+        self._stop_event = threading.Event()
+        self._rescan_now = threading.Event()
+        self._queue = queue.Queue(maxsize=1024)
+        self._observer = None
+        self._threads = []
+        self._started = False
+        self._indexed_root_ids = tuple(
+            root_id for root_id in SEARCH_INDEX_ROOT_IDS if root_id in WATCH_ROOTS
+        )
+        self._indexed_root_paths = {
+            root_id: WATCH_ROOTS[root_id]["path"].resolve()
+            for root_id in self._indexed_root_ids
+        }
+        self._root_match_order = sorted(
+            self._indexed_root_ids,
+            key=lambda root_id: len(self._indexed_root_paths[root_id].parts),
+            reverse=True,
+        )
+        self._watch_paths = self._compute_watch_paths(self._indexed_root_ids)
+        self._fallback_watch_paths = self._watch_paths
+        self._init_db()
+
+    def _connect(self):
+        con = sqlite3.connect(str(self.db_path), timeout=30)
+        con.row_factory = sqlite3.Row
+        con.execute("PRAGMA journal_mode=WAL")
+        con.execute("PRAGMA synchronous=NORMAL")
+        con.execute("PRAGMA busy_timeout=5000")
+        return con
+
+    def _init_db(self):
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        with self._connect() as con:
+            cur = con.cursor()
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS files (
+                    id INTEGER PRIMARY KEY,
+                    root TEXT NOT NULL,
+                    path TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    size INTEGER NOT NULL DEFAULT 0,
+                    mtime REAL NOT NULL DEFAULT 0,
+                    kind TEXT NOT NULL,
+                    ext TEXT NOT NULL DEFAULT '',
+                    UNIQUE(root, path)
+                )
+                """
+            )
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_files_root_path ON files(root, path)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_files_kind ON files(kind)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_files_ext ON files(ext)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_files_mtime ON files(mtime DESC)")
+            cur.execute(
+                """
+                CREATE VIRTUAL TABLE IF NOT EXISTS files_fts
+                USING fts5(name, path, tokenize='trigram', content='files', content_rowid='id')
+                """
+            )
+            cur.execute(
+                """
+                CREATE TRIGGER IF NOT EXISTS files_ai AFTER INSERT ON files BEGIN
+                    INSERT INTO files_fts(rowid, name, path) VALUES (new.id, new.name, new.path);
+                END
+                """
+            )
+            cur.execute(
+                """
+                CREATE TRIGGER IF NOT EXISTS files_ad AFTER DELETE ON files BEGIN
+                    INSERT INTO files_fts(files_fts, rowid, name, path)
+                    VALUES ('delete', old.id, old.name, old.path);
+                END
+                """
+            )
+            cur.execute(
+                """
+                CREATE TRIGGER IF NOT EXISTS files_au AFTER UPDATE ON files BEGIN
+                    INSERT INTO files_fts(files_fts, rowid, name, path)
+                    VALUES ('delete', old.id, old.name, old.path);
+                    INSERT INTO files_fts(rowid, name, path) VALUES (new.id, new.name, new.path);
+                END
+                """
+            )
+            file_count = cur.execute("SELECT count(*) FROM files").fetchone()[0]
+            fts_count = cur.execute("SELECT count(*) FROM files_fts").fetchone()[0]
+            if file_count and not fts_count:
+                cur.execute("INSERT INTO files_fts(files_fts) VALUES ('rebuild')")
+
+    def _compute_watch_paths(self, root_ids=None):
+        if root_ids is None:
+            source_roots = WATCH_ROOTS.values()
+        else:
+            source_roots = [WATCH_ROOTS[root_id] for root_id in root_ids if root_id in WATCH_ROOTS]
+        roots = sorted(
+            {meta["path"].resolve() for meta in source_roots},
+            key=lambda path: len(path.parts),
+        )
+        selected = []
+        for root_path in roots:
+            if any(self._is_relative_to(root_path, existing) for existing in selected):
+                continue
+            selected.append(root_path)
+        return selected
+
+    @staticmethod
+    def _is_relative_to(path_obj, other):
+        try:
+            path_obj.relative_to(other)
+            return True
+        except ValueError:
+            return False
+
+    def _is_index_artifact(self, abs_path):
+        try:
+            resolved = str(Path(abs_path).resolve(strict=False))
+        except Exception:
+            resolved = os.path.abspath(abs_path)
+        db_path = str(self.db_path)
+        return resolved == db_path or resolved.startswith(db_path + "-")
+
+    def _best_matching_root(self, abs_path):
+        abs_path_obj = Path(abs_path).resolve(strict=False)
+        for root_id in self._root_match_order:
+            root_path = self._indexed_root_paths[root_id]
+            if self._is_relative_to(abs_path_obj, root_path):
+                return root_id, root_path
+        return None, None
+
+    def _iter_root_entries(self, root_id):
+        root_path = self._indexed_root_paths.get(root_id)
+        if root_path is None:
+            return
+        if not root_path.exists():
+            return
+        root_str = str(root_path)
+        for dirpath, dirnames, filenames in os.walk(root_str, topdown=True):
+            kept_dirs = []
+            for dirname in dirnames:
+                if dirname in SKIP_NAMES:
+                    continue
+                child_abs = os.path.join(dirpath, dirname)
+                if self._is_index_artifact(child_abs) or os.path.islink(child_abs):
+                    continue
+                child_root_id, _ = self._best_matching_root(child_abs)
+                if child_root_id != root_id:
+                    continue
+                kept_dirs.append(dirname)
+                row = self._build_row(root_id, root_path, child_abs, is_dir=True)
+                if row:
+                    yield row
+            dirnames[:] = kept_dirs
+
+            for filename in filenames:
+                if filename in SKIP_NAMES:
+                    continue
+                child_abs = os.path.join(dirpath, filename)
+                if self._is_index_artifact(child_abs) or os.path.islink(child_abs):
+                    continue
+                row = self._build_row(root_id, root_path, child_abs, is_dir=False)
+                if row:
+                    yield row
+
+    def _build_row(self, root_id, root_path, abs_path, is_dir):
+        try:
+            stat = os.stat(abs_path, follow_symlinks=False)
+        except OSError:
+            return None
+        owner_root_id, _ = self._best_matching_root(abs_path)
+        if owner_root_id != root_id:
+            return None
+        path_obj = Path(abs_path)
+        name = path_obj.name
+        if name in SKIP_NAMES:
+            return None
+        try:
+            rel_path = str(path_obj.relative_to(root_path))
+        except ValueError:
+            return None
+        if not rel_path or rel_path == ".":
+            return None
+        return {
+            "root": root_id,
+            "path": rel_path,
+            "name": name,
+            "size": 0 if is_dir else int(stat.st_size),
+            "mtime": float(stat.st_mtime),
+            "kind": "dir" if is_dir else _guess_kind(path_obj),
+            "ext": "" if is_dir else path_obj.suffix.lower(),
+        }
+
+    def _matching_roots_for_path(self, abs_path):
+        root_id, root_path = self._best_matching_root(abs_path)
+        if root_id is None or root_path is None:
+            return []
+        return [(root_id, root_path)]
+
+    def _upsert_rows(self, cur, rows):
+        if not rows:
+            return
+        cur.executemany(
+            """
+            INSERT INTO files (root, path, name, size, mtime, kind, ext)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(root, path) DO UPDATE SET
+                name=excluded.name,
+                size=excluded.size,
+                mtime=excluded.mtime,
+                kind=excluded.kind,
+                ext=excluded.ext
+            WHERE files.name != excluded.name
+               OR files.size != excluded.size
+               OR files.mtime != excluded.mtime
+               OR files.kind != excluded.kind
+               OR files.ext != excluded.ext
+            """,
+            [
+                (
+                    row["root"],
+                    row["path"],
+                    row["name"],
+                    row["size"],
+                    row["mtime"],
+                    row["kind"],
+                    row["ext"],
+                )
+                for row in rows
+            ],
+        )
+
+    def _remove_relative_path(self, cur, root_id, rel_path, recursive=False):
+        rel_path = str(rel_path).strip()
+        if not rel_path or rel_path == ".":
+            cur.execute("DELETE FROM files WHERE root = ?", (root_id,))
+            return
+        if recursive:
+            cur.execute(
+                "DELETE FROM files WHERE root = ? AND (path = ? OR path LIKE ?)",
+                (root_id, rel_path, rel_path + "/%"),
+            )
+            return
+        cur.execute("DELETE FROM files WHERE root = ? AND path = ?", (root_id, rel_path))
+
+    def _scan_root(self, root_id):
+        root_meta = WATCH_ROOTS.get(root_id)
+        if not root_meta or not root_meta["path"].exists():
+            with self._lock:
+                with self._connect() as con:
+                    self._remove_relative_path(con.cursor(), root_id, "", recursive=True)
+            return
+
+        with self._lock:
+            with self._connect() as con:
+                cur = con.cursor()
+                cur.execute("CREATE TEMP TABLE IF NOT EXISTS scan_seen(path TEXT PRIMARY KEY)")
+                cur.execute("DELETE FROM scan_seen")
+                batch = []
+                seen_batch = []
+                for row in self._iter_root_entries(root_id):
+                    seen_batch.append((row["path"],))
+                    current = cur.execute(
+                        "SELECT mtime, size, kind, ext, name FROM files WHERE root = ? AND path = ?",
+                        (root_id, row["path"]),
+                    ).fetchone()
+                    if (
+                        current is None
+                        or float(current["mtime"]) != row["mtime"]
+                        or int(current["size"]) != row["size"]
+                        or current["kind"] != row["kind"]
+                        or current["ext"] != row["ext"]
+                        or current["name"] != row["name"]
+                    ):
+                        batch.append(row)
+                    if len(batch) >= SEARCH_INDEX_BATCH_SIZE:
+                        self._upsert_rows(cur, batch)
+                        batch.clear()
+                        con.commit()
+                    if len(seen_batch) >= SEARCH_INDEX_BATCH_SIZE:
+                        cur.executemany("INSERT OR IGNORE INTO scan_seen(path) VALUES (?)", seen_batch)
+                        seen_batch.clear()
+                        con.commit()
+                self._upsert_rows(cur, batch)
+                if batch:
+                    con.commit()
+                if seen_batch:
+                    cur.executemany("INSERT OR IGNORE INTO scan_seen(path) VALUES (?)", seen_batch)
+                    con.commit()
+                cur.execute(
+                    "DELETE FROM files WHERE root = ? AND path NOT IN (SELECT path FROM scan_seen)",
+                    (root_id,),
+                )
+                cur.execute("DELETE FROM scan_seen")
+                con.commit()
+
+    def _scan_all_roots(self):
+        for root_id in self._indexed_root_ids:
+            if self._stop_event.is_set():
+                return
+            try:
+                self._scan_root(root_id)
+            except Exception as exc:
+                print(f"Search index scan failed for {root_id}: {exc}", flush=True)
+
+    def _prune_index_roots(self):
+        with self._lock:
+            with self._connect() as con:
+                cur = con.cursor()
+                if self._indexed_root_ids:
+                    placeholders = ", ".join("?" for _ in self._indexed_root_ids)
+                    cur.execute(
+                        f"DELETE FROM files WHERE root NOT IN ({placeholders})",
+                        self._indexed_root_ids,
+                    )
+                else:
+                    cur.execute("DELETE FROM files")
+                con.commit()
+
+    def _upsert_path(self, abs_path, recursive=False):
+        if self._is_index_artifact(abs_path):
+            return
+        abs_path_obj = Path(abs_path)
+        exists = abs_path_obj.exists()
+        matches = self._matching_roots_for_path(abs_path)
+        if not matches:
+            return
+        with self._lock:
+            with self._connect() as con:
+                cur = con.cursor()
+                if not exists:
+                    for root_id, root_path in matches:
+                        try:
+                            rel_path = str(abs_path_obj.resolve(strict=False).relative_to(root_path))
+                        except ValueError:
+                            continue
+                        self._remove_relative_path(cur, root_id, rel_path, recursive=recursive)
+                    con.commit()
+                    return
+
+                if recursive and abs_path_obj.is_dir():
+                    for root_id, root_path in matches:
+                        rows = []
+                        root_row = self._build_row(root_id, root_path, str(abs_path_obj), is_dir=True)
+                        if root_row:
+                            rows.append(root_row)
+                        for dirpath, dirnames, filenames in os.walk(str(abs_path_obj), topdown=True):
+                            kept_dirs = []
+                            for dirname in dirnames:
+                                if dirname in SKIP_NAMES:
+                                    continue
+                                child_abs = os.path.join(dirpath, dirname)
+                                if self._is_index_artifact(child_abs) or os.path.islink(child_abs):
+                                    continue
+                                child_root_id, _ = self._best_matching_root(child_abs)
+                                if child_root_id != root_id:
+                                    continue
+                                kept_dirs.append(dirname)
+                                row = self._build_row(root_id, root_path, child_abs, is_dir=True)
+                                if row:
+                                    rows.append(row)
+                                    if len(rows) >= SEARCH_INDEX_BATCH_SIZE:
+                                        self._upsert_rows(cur, rows)
+                                        rows.clear()
+                            dirnames[:] = kept_dirs
+                            for filename in filenames:
+                                if filename in SKIP_NAMES:
+                                    continue
+                                child_abs = os.path.join(dirpath, filename)
+                                if self._is_index_artifact(child_abs) or os.path.islink(child_abs):
+                                    continue
+                                row = self._build_row(root_id, root_path, child_abs, is_dir=False)
+                                if row:
+                                    rows.append(row)
+                                    if len(rows) >= SEARCH_INDEX_BATCH_SIZE:
+                                        self._upsert_rows(cur, rows)
+                                        rows.clear()
+                        self._upsert_rows(cur, rows)
+                    con.commit()
+                    return
+
+                is_dir = abs_path_obj.is_dir()
+                rows = []
+                for root_id, root_path in matches:
+                    row = self._build_row(root_id, root_path, str(abs_path_obj), is_dir=is_dir)
+                    if row:
+                        rows.append(row)
+                self._upsert_rows(cur, rows)
+                con.commit()
+
+    def _remove_path(self, abs_path, recursive=False):
+        if self._is_index_artifact(abs_path):
+            return
+        abs_path_obj = Path(abs_path).resolve(strict=False)
+        matches = self._matching_roots_for_path(abs_path_obj)
+        if not matches:
+            return
+        with self._lock:
+            with self._connect() as con:
+                cur = con.cursor()
+                for root_id, root_path in matches:
+                    try:
+                        rel_path = str(abs_path_obj.relative_to(root_path))
+                    except ValueError:
+                        continue
+                    self._remove_relative_path(cur, root_id, rel_path, recursive=recursive)
+                con.commit()
+
+    def enqueue_event(self, op, src_path, dest_path=None, is_directory=False):
+        if self._stop_event.is_set():
+            return
+        if self._is_index_artifact(src_path) or (dest_path and self._is_index_artifact(dest_path)):
+            return
+        try:
+            self._queue.put_nowait(
+                {
+                    "op": op,
+                    "src_path": src_path,
+                    "dest_path": dest_path,
+                    "is_directory": is_directory,
+                }
+            )
+        except queue.Full:
+            self._rescan_now.set()
+
+    def _event_worker(self):
+        while not self._stop_event.is_set():
+            if self._rescan_now.is_set():
+                self._rescan_now.clear()
+                self._scan_all_roots()
+            try:
+                event = self._queue.get(timeout=1)
+            except queue.Empty:
+                continue
+            try:
+                op = event["op"]
+                src_path = event["src_path"]
+                dest_path = event.get("dest_path")
+                is_directory = bool(event.get("is_directory"))
+                if op == "deleted":
+                    self._remove_path(src_path, recursive=is_directory)
+                elif op == "moved":
+                    self._remove_path(src_path, recursive=is_directory)
+                    if dest_path:
+                        self._upsert_path(dest_path, recursive=is_directory)
+                elif op == "created":
+                    self._upsert_path(src_path, recursive=is_directory)
+                elif op == "modified":
+                    if not is_directory:
+                        self._upsert_path(src_path, recursive=False)
+            except Exception as exc:
+                print(f"Search index event failed: {exc}", flush=True)
+
+    def _scheduled_rescan_worker(self):
+        while not self._stop_event.wait(SEARCH_INDEX_SCAN_INTERVAL):
+            try:
+                self._scan_all_roots()
+            except Exception as exc:
+                print(f"Scheduled search index rescan failed: {exc}", flush=True)
+
+    def _full_reindex_worker(self):
+        try:
+            self._scan_all_roots()
+        except Exception as exc:
+            print(f"Initial search index rebuild failed: {exc}", flush=True)
+
+    def _build_observer(self, paths):
+        handler = SearchIndexEventHandler(self)
+        observer = Observer()
+        try:
+            for watch_path in paths:
+                if watch_path.exists():
+                    observer.schedule(handler, str(watch_path), recursive=True)
+            observer.start()
+            return observer
+        except Exception:
+            with contextlib.suppress(Exception):
+                observer.stop()
+            with contextlib.suppress(Exception):
+                observer.join(timeout=2)
+            raise
+
+    def _start_watchdog(self):
+        if Observer is None:
+            print("watchdog is unavailable; search index will rely on scheduled rescans only", flush=True)
+            return
+        candidate_sets = [self._watch_paths]
+        if self._fallback_watch_paths and self._fallback_watch_paths != self._watch_paths:
+            candidate_sets.append(self._fallback_watch_paths)
+        for paths in candidate_sets:
+            try:
+                self._observer = self._build_observer(paths)
+                return
+            except OSError as exc:
+                if exc.errno == errno.ENOSPC:
+                    print(
+                        f"watchdog inotify limit reached for {[str(path) for path in paths]}; retrying with a smaller watch set",
+                        flush=True,
+                    )
+                    continue
+                raise
+        print("watchdog could not start within inotify limits; scheduled rescans remain active", flush=True)
+
+    def start(self):
+        if self._started:
+            return
+        self._started = True
+        self._stop_event.clear()
+        self._rescan_now.clear()
+        self._prune_index_roots()
+        self._start_watchdog()
+        for target in (self._full_reindex_worker, self._scheduled_rescan_worker, self._event_worker):
+            thread = threading.Thread(target=target, daemon=True)
+            thread.start()
+            self._threads.append(thread)
+
+    def stop(self):
+        self._stop_event.set()
+        if self._observer is not None:
+            self._observer.stop()
+            self._observer.join(timeout=5)
+            self._observer = None
+        for thread in self._threads:
+            thread.join(timeout=1)
+        self._threads.clear()
+        self._started = False
+
+    @staticmethod
+    def _parse_kind_filter(filters):
+        kinds = filters.get("kind")
+        if not kinds:
+            return []
+        if isinstance(kinds, str):
+            values = kinds.split(",")
+        else:
+            values = []
+            for value in kinds:
+                values.extend(str(value).split(","))
+        allowed = {"dir", "image", "text", "binary"}
+        return [value.strip() for value in values if value.strip() in allowed]
+
+    @staticmethod
+    def _parse_ext_filter(ext_value):
+        if not ext_value:
+            return []
+        parts = str(ext_value).strip().lower().split()
+        values = []
+        for part in parts:
+            for chunk in part.split(","):
+                chunk = chunk.strip()
+                if not chunk:
+                    continue
+                values.append(chunk if chunk.startswith(".") else "." + chunk)
+        return values
+
+    @staticmethod
+    def _fts_term(text):
+        return '"' + str(text).replace('"', '""') + '"'
+
+    def search(self, query, limit=50, filters=None):
+        filters = filters or {}
+        capped_limit = max(1, min(int(limit or 50), SEARCH_INDEX_LIMIT))
+        sql = [
+            """
+            SELECT f.root, f.path, f.name, f.size, f.mtime, f.kind, f.ext
+            FROM files AS f
+            """
+        ]
+        params = []
+        where = []
+        order_by = "f.mtime DESC"
+        query_text = str(query or "").strip()
+
+        if query_text:
+            query_like = f"%{query_text.lower()}%"
+            if len(query_text) >= 3:
+                sql.append("JOIN files_fts ON files_fts.rowid = f.id")
+                where.append("files_fts MATCH ?")
+                params.append(self._fts_term(query_text))
+                where.append("(lower(f.name) LIKE ? OR lower(f.path) LIKE ?)")
+                params.extend([query_like, query_like])
+                order_by = "bm25(files_fts), f.mtime DESC"
+            else:
+                where.append("(lower(f.name) LIKE ? OR lower(f.path) LIKE ?)")
+                params.extend([query_like, query_like])
+
+        name_filter = str(filters.get("name", "")).strip()
+        if name_filter:
+            where.append("lower(f.name) LIKE ?")
+            params.append(f"%{name_filter.lower()}%")
+
+        raw_kind_filter = filters.get("kind")
+        kind_values = self._parse_kind_filter(filters)
+        if raw_kind_filter and not kind_values:
+            return {"ok": True, "query": query_text, "results": []}
+        if kind_values:
+            where.append("f.kind IN ({})".format(", ".join("?" for _ in kind_values)))
+            params.extend(kind_values)
+
+        dotfiles = str(filters.get("dotfiles", "1")).strip().lower()
+        if dotfiles in {"0", "false", "no"}:
+            where.append("substr(f.name, 1, 1) != '.'")
+
+        size_op = str(filters.get("size_op", "")).strip().lower()
+        try:
+            size_val = float(filters.get("size_val", 0) or 0)
+        except (TypeError, ValueError):
+            size_val = 0
+        try:
+            size_unit = float(filters.get("size_unit", 1024) or 1024)
+        except (TypeError, ValueError):
+            size_unit = 1024
+        if size_op in {"gt", "lt"} and size_val > 0:
+            threshold = size_val * size_unit
+            where.append("(f.kind = 'dir' OR f.size {} ?)".format(">" if size_op == "gt" else "<"))
+            params.append(threshold)
+
+        try:
+            mtime_days = int(filters.get("mtime_days", 0) or 0)
+        except (TypeError, ValueError):
+            mtime_days = 0
+        if mtime_days > 0:
+            cutoff = time.time() - (mtime_days * 86400)
+            where.append("f.mtime >= ?")
+            params.append(cutoff)
+
+        ext_values = self._parse_ext_filter(filters.get("ext", ""))
+        if ext_values:
+            where.append("(f.kind = 'dir' OR f.ext IN ({}))".format(", ".join("?" for _ in ext_values)))
+            params.extend(ext_values)
+
+        if where:
+            sql.append("WHERE " + " AND ".join(where))
+        sql.append(f"ORDER BY {order_by}")
+        sql.append("LIMIT ?")
+        params.append(capped_limit)
+
+        with self._connect() as con:
+            rows = con.execute("\n".join(sql), params).fetchall()
+
+        results = []
+        for row in rows:
+            root_path = WATCH_ROOTS.get(row["root"], {}).get("path")
+            absolute_path = str((root_path / row["path"]).resolve()) if root_path else row["path"]
+            results.append(
+                {
+                    "root": row["root"],
+                    "path": row["path"],
+                    "name": row["name"],
+                    "size": int(row["size"]),
+                    "modified": int(float(row["mtime"])),
+                    "mtime": _iso_mtime(float(row["mtime"])),
+                    "kind": row["kind"],
+                    "ext": row["ext"],
+                    "absolute_path": absolute_path,
+                    "full_path": absolute_path,
+                }
+            )
+        return {"ok": True, "query": query_text, "results": results}
+
+
+SEARCH_INDEX = SearchIndexManager(SEARCH_INDEX_DB)
+
+
 def parse_multipart(content_type, body):
     """Parse multipart/form-data. Returns list of (name, filename, data) tuples."""
     boundary = None
@@ -290,6 +1024,7 @@ def upload_file(root_id, rel_dir, filename, data):
         dest.write_bytes(data)
     except OSError as e:
         return {"ok": False, "message": str(e)}
+    _reset_recent_cache()
     
     # Trigger file upload event via cron wake
     try:
@@ -335,6 +1070,7 @@ def create_text_file(root_id, rel_dir, filename, content):
         dest.write_text(content, encoding="utf-8")
     except OSError as e:
         return {"ok": False, "message": str(e)}
+    _reset_recent_cache()
     return {
         "ok": True,
         "message": "Created",
@@ -611,6 +1347,203 @@ def _resolve_within(root_id, rel_path=""):
     return candidate
 
 
+def _coerce_bool(value, default=False):
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _normalize_rel_path(value):
+    raw = str(value or "").strip().replace("\\", "/")
+    if raw in {"", ".", "/"}:
+        return ""
+    normalized = str(Path(raw))
+    if normalized == ".":
+        return ""
+    return normalized.replace("\\", "/")
+
+
+def _prime_key(root_id, rel_path):
+    return f"{root_id}:{rel_path}"
+
+
+def _prime_label(root_id, rel_path):
+    root_meta = WATCH_ROOTS.get(root_id, {})
+    if rel_path:
+        return Path(rel_path).name or rel_path
+    return root_meta.get("label", root_id)
+
+
+def _reset_recent_cache():
+    with _RECENT_LOCK:
+        _RECENT_CACHE["ts"] = 0.0
+        _RECENT_CACHE["limit"] = 0
+        _RECENT_CACHE["items"] = []
+
+
+def _sanitize_prime_directory_item(item, require_existing=False):
+    if not isinstance(item, dict):
+        raise ValueError("Prime directory entries must be objects")
+    root_id = str(item.get("root", "")).strip()
+    if root_id not in WATCH_ROOTS:
+        raise ValueError("Unknown root")
+    rel_path = _normalize_rel_path(item.get("path", ""))
+    target = _resolve_within(root_id, rel_path)
+    if require_existing and (not target.exists() or not target.is_dir()):
+        raise ValueError("Prime directory must point to an existing directory")
+    return {
+        "root": root_id,
+        "path": rel_path,
+        "include_subdirectories": _coerce_bool(item.get("include_subdirectories"), True),
+        "pin_to_favorites": _coerce_bool(item.get("pin_to_favorites"), False),
+    }
+
+
+def _read_prime_directories_raw():
+    with _PRIME_LOCK:
+        if not PRIME_DIRECTORIES_PATH.exists():
+            return []
+        try:
+            payload = json.loads(PRIME_DIRECTORIES_PATH.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+    items = payload.get("items", payload) if isinstance(payload, (dict, list)) else []
+    if not isinstance(items, list):
+        return []
+
+    sanitized = []
+    seen = set()
+    for item in items:
+        try:
+            clean = _sanitize_prime_directory_item(item, require_existing=False)
+        except Exception:
+            continue
+        key = _prime_key(clean["root"], clean["path"])
+        if key in seen:
+            continue
+        seen.add(key)
+        sanitized.append(clean)
+    sanitized.sort(key=lambda item: (item["root"], item["path"]))
+    return sanitized
+
+
+def _write_prime_directories_raw(items):
+    payload = {"items": items}
+    PRIME_DIRECTORIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = PRIME_DIRECTORIES_PATH.with_suffix(".json.tmp")
+    with _PRIME_LOCK:
+        tmp_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        os.replace(tmp_path, PRIME_DIRECTORIES_PATH)
+
+
+def _read_favorites_order():
+    with _FAVORITES_ORDER_LOCK:
+        if not FAVORITES_ORDER_PATH.exists():
+            return []
+        try:
+            return json.loads(FAVORITES_ORDER_PATH.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+
+
+def _write_favorites_order(order):
+    with _FAVORITES_ORDER_LOCK:
+        tmp_path = FAVORITES_ORDER_PATH.with_suffix(".json.tmp")
+        tmp_path.write_text(json.dumps(order), encoding="utf-8")
+        os.replace(tmp_path, FAVORITES_ORDER_PATH)
+
+
+def save_favorites_order(order):
+    if not isinstance(order, list) or not all(isinstance(k, str) for k in order):
+        return {"ok": False, "message": "order must be a list of strings"}
+    _write_favorites_order(order)
+    return {"ok": True, "favorites": get_favorites()}
+
+
+def get_prime_directories():
+    items = []
+    for item in _read_prime_directories_raw():
+        root_id = item["root"]
+        rel_path = item["path"]
+        try:
+            target = _resolve_within(root_id, rel_path)
+            exists = target.exists() and target.is_dir()
+            absolute_path = str(target)
+        except Exception:
+            exists = False
+            absolute_path = ""
+        root_meta = WATCH_ROOTS.get(root_id, {})
+        items.append(
+            {
+                **item,
+                "key": _prime_key(root_id, rel_path),
+                "label": _prime_label(root_id, rel_path),
+                "root_label": root_meta.get("label", root_id),
+                "absolute_path": absolute_path,
+                "exists": exists,
+            }
+        )
+    return items
+
+
+def get_favorites():
+    # Prime Directories marked as pin_to_favorites are the exclusive source of truth
+    by_key = {}
+    for item in get_prime_directories():
+        if not item["pin_to_favorites"] or not item["exists"]:
+            continue
+        key = f"{item['root']}::{item['path']}"
+        if key not in by_key:
+            by_key[key] = {
+                "label": item["label"],
+                "root": item["root"],
+                "path": item["path"],
+                "kind": "dir",
+            }
+
+    # Apply custom order; append any new favorites not yet in order list
+    order = _read_favorites_order()
+    ordered = [by_key[k] for k in order if k in by_key]
+    ordered_keys = set(order)
+    for k, fav in by_key.items():
+        if k not in ordered_keys:
+            ordered.append(fav)
+    return ordered
+
+
+def save_prime_directories(items):
+    if not isinstance(items, list):
+        return {"ok": False, "message": "Prime directories payload must be a list"}
+
+    sanitized = []
+    seen = set()
+    for item in items:
+        try:
+            clean = _sanitize_prime_directory_item(item, require_existing=True)
+        except Exception as exc:
+            return {"ok": False, "message": str(exc)}
+        key = _prime_key(clean["root"], clean["path"])
+        if key in seen:
+            continue
+        seen.add(key)
+        sanitized.append(clean)
+
+    sanitized.sort(key=lambda item: (item["root"], item["path"]))
+    try:
+        _write_prime_directories_raw(sanitized)
+    except OSError as exc:
+        return {"ok": False, "message": str(exc)}
+    _reset_recent_cache()
+    return {
+        "ok": True,
+        "message": "Saved",
+        "prime_directories": get_prime_directories(),
+        "favorites": get_favorites(),
+    }
+
+
 def get_watch_roots():
     roots = []
     for root_id, meta in WATCH_ROOTS.items():
@@ -624,7 +1557,11 @@ def get_watch_roots():
                 "exists": path_obj.exists(),
             }
         )
-    return {"roots": roots, "favorites": FAVORITES}
+    return {
+        "roots": roots,
+        "favorites": get_favorites(),
+        "prime_directories": get_prime_directories(),
+    }
 
 
 def _directory_has_visible_children(path_obj):
@@ -805,6 +1742,7 @@ def save_text_file(root_id, rel_path, content, new_filename=None):
             target = new_path
         except OSError as e:
             return {"ok": False, "message": f"Saved but rename failed: {e}"}
+    _reset_recent_cache()
     root_path = _safe_root(root_id).resolve()
     return {
         "ok": True,
@@ -815,47 +1753,8 @@ def save_text_file(root_id, rel_path, content, new_filename=None):
     }
 
 
-def search_files(query, limit=50):
-    """Search for files matching query across all watch roots."""
-    query_lower = query.lower()
-    results = []
-    
-    for root_id, root_config in WATCH_ROOTS.items():
-        root_path = root_config["path"]
-        if not root_path.exists():
-            continue
-        
-        try:
-            for item in root_path.rglob("*"):
-                if item.is_dir():
-                    continue
-                if item.name.lower().startswith('.'):
-                    continue
-                    
-                # Check if query matches filename or path
-                if query_lower in item.name.lower() or query_lower in str(item).lower():
-                    try:
-                        rel_path = str(item.relative_to(root_path))
-                        stat = item.stat()
-                        results.append({
-                            "root": root_id,
-                            "path": rel_path,
-                            "name": item.name,
-                            "size": stat.st_size,
-                            "modified": int(stat.st_mtime),
-                            "full_path": str(item),
-                        })
-                    except Exception:
-                        pass
-                    
-                    if len(results) >= limit:
-                        break
-            if len(results) >= limit:
-                break
-        except Exception:
-            pass
-    
-    return {"ok": True, "query": query, "results": results[:limit]}
+def search_files(query, limit=50, filters=None):
+    return SEARCH_INDEX.search(query, limit=limit, filters=filters or {})
 
 
 def _dir_size(path_obj):
@@ -935,6 +1834,7 @@ def trash_move(items):
         except OSError:
             pass
 
+        _reset_recent_cache()
         results.append({"ok": True, "message": "Moved to trash", "trash_name": trash_name})
 
     return {"ok": True, "results": results}
@@ -1018,6 +1918,7 @@ def trash_restore(item_ids):
             results.append({"ok": False, "message": str(e)})
             continue
 
+        _reset_recent_cache()
         results.append({"ok": True, "message": "Restored"})
 
     return {"ok": True, "results": results}
@@ -1045,6 +1946,7 @@ def trash_delete(item_ids):
         except OSError as e:
             results.append({"ok": False, "message": str(e)})
             continue
+        _reset_recent_cache()
         results.append({"ok": True, "message": "Permanently deleted"})
     return {"ok": True, "results": results}
 
@@ -1063,40 +1965,95 @@ def trash_empty():
             count += 1
         except OSError:
             pass
+    if count:
+        _reset_recent_cache()
     return {"ok": True, "message": f"Emptied trash ({count} items removed)", "deleted": count}
 
 
 def recent_changes(limit=40):
-    files = []
     max_files = max(10, min(limit, 100))
-    for root_id, meta in WATCH_ROOTS.items():
-        base = meta["path"]
-        if not base.exists():
-            continue
-        for dirpath, dirnames, filenames in os.walk(base):
-            dirnames[:] = [d for d in dirnames if d not in SKIP_NAMES]
-            for name in filenames:
-                if name in SKIP_NAMES:
-                    continue
-                path_obj = Path(dirpath) / name
+    now = time.time()
+    if _RECENT_CACHE["items"] and _RECENT_CACHE["limit"] >= max_files:
+        if (now - _RECENT_CACHE["ts"]) < RECENT_SCAN_TTL:
+            return {"ok": True, "items": _RECENT_CACHE["items"][:max_files], "cached": True}
+
+    if not _RECENT_LOCK.acquire(blocking=False):
+        return {"ok": True, "items": _RECENT_CACHE["items"][:max_files], "cached": True}
+
+    try:
+        now = time.time()
+        if _RECENT_CACHE["items"] and _RECENT_CACHE["limit"] >= max_files:
+            if (now - _RECENT_CACHE["ts"]) < RECENT_SCAN_TTL:
+                return {"ok": True, "items": _RECENT_CACHE["items"][:max_files], "cached": True}
+
+        prime_directories = [item for item in get_prime_directories() if item.get("exists")]
+        if not prime_directories:
+            _RECENT_CACHE["ts"] = time.time()
+            _RECENT_CACHE["limit"] = max_files
+            _RECENT_CACHE["items"] = []
+            return {"ok": True, "items": [], "cached": False}
+
+        recent_heap = []
+        seen_paths = set()
+        counter = 0
+        for prime in prime_directories:
+            root_id = prime["root"]
+            base = Path(prime["absolute_path"])
+            if not base.exists():
+                continue
+            root_base = _safe_root(root_id).resolve()
+
+            def consider_file(path_obj):
+                nonlocal counter
+                abs_path = str(path_obj)
+                if abs_path in seen_paths:
+                    return
                 try:
                     stat = path_obj.stat()
                 except OSError:
-                    continue
-                rel_path = str(path_obj.relative_to(base))
-                files.append(
-                    {
-                        "root": root_id,
-                        "label": meta["label"],
-                        "path": rel_path,
-                        "absolute_path": str(path_obj),
-                        "mtime": _iso_mtime(stat.st_mtime),
-                        "size": stat.st_size,
-                        "kind": _guess_kind(path_obj),
-                    }
-                )
-    files.sort(key=lambda item: item["mtime"], reverse=True)
-    return {"ok": True, "items": files[:max_files]}
+                    return
+                seen_paths.add(abs_path)
+                rel_path = str(path_obj.relative_to(root_base))
+                item = {
+                    "root": root_id,
+                    "label": f"Prime · {prime['label']}",
+                    "path": rel_path,
+                    "absolute_path": abs_path,
+                    "mtime": _iso_mtime(stat.st_mtime),
+                    "size": stat.st_size,
+                    "kind": _guess_kind(path_obj),
+                }
+                entry = (stat.st_mtime, counter, item)
+                counter += 1
+                if len(recent_heap) < max_files:
+                    heapq.heappush(recent_heap, entry)
+                elif entry[0] > recent_heap[0][0]:
+                    heapq.heapreplace(recent_heap, entry)
+
+            if prime["include_subdirectories"]:
+                for dirpath, dirnames, filenames in os.walk(base):
+                    dirnames[:] = [d for d in dirnames if d not in SKIP_NAMES]
+                    for name in filenames:
+                        if name in SKIP_NAMES:
+                            continue
+                        consider_file(Path(dirpath) / name)
+                continue
+
+            try:
+                for child in base.iterdir():
+                    if child.name in SKIP_NAMES or not child.is_file():
+                        continue
+                    consider_file(child)
+            except OSError:
+                continue
+
+        items = [item for _, _, item in sorted(recent_heap, key=lambda row: row[0], reverse=True)]
+        _RECENT_CACHE["ts"] = time.time()
+        _RECENT_CACHE["limit"] = max_files
+        _RECENT_CACHE["items"] = items
+        return {"ok": True, "items": items, "cached": False}
+    finally:
+        _RECENT_LOCK.release()
 
 
 def _tail_lines(path_obj, lines=20):
@@ -1334,14 +2291,21 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/files/search":
             q = parse_qs(parsed.query)
             query = q.get("q", [""])[0].strip()
-            if not query:
-                self._send_json({"ok": False, "message": "Missing query parameter 'q'"}, code=400)
-                return
             try:
                 limit = int(q.get("limit", ["50"])[0])
             except ValueError:
                 limit = 50
-            self._send_json(search_files(query, limit=limit))
+            filters = {
+                "name": q.get("name", [""])[0].strip(),
+                "kind": q.get("kind", []),
+                "dotfiles": q.get("dotfiles", ["1"])[0].strip(),
+                "size_op": q.get("size_op", [""])[0].strip(),
+                "size_val": q.get("size_val", ["0"])[0].strip(),
+                "size_unit": q.get("size_unit", ["1024"])[0].strip(),
+                "mtime_days": q.get("mtime_days", ["0"])[0].strip(),
+                "ext": q.get("ext", [""])[0].strip(),
+            }
+            self._send_json(search_files(query, limit=limit, filters=filters))
             return
         if parsed.path == "/api/trash":
             self._send_json(trash_list())
@@ -1469,6 +2433,24 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json({"ok": False, "message": str(e)}, code=500)
             return
+        if self.path == "/api/files/prime-directories":
+            try:
+                body_len = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(body_len)
+                payload = json.loads(body.decode("utf-8"))
+                self._send_json(save_prime_directories(payload.get("items", [])))
+            except Exception as e:
+                self._send_json({"ok": False, "message": str(e)}, code=500)
+            return
+        if self.path == "/api/files/favorites/reorder":
+            try:
+                body_len = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(body_len)
+                payload = json.loads(body.decode("utf-8"))
+                self._send_json(save_favorites_order(payload.get("order", [])))
+            except Exception as e:
+                self._send_json({"ok": False, "message": str(e)}, code=500)
+            return
         if self.path == "/api/files/delete":
             try:
                 body_len = int(self.headers.get("Content-Length", "0"))
@@ -1532,6 +2514,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    SEARCH_INDEX.start()
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     server.daemon_threads = True
     print(f"Serving dashboard on http://{HOST}:{PORT}", flush=True)
@@ -1541,6 +2524,7 @@ def main():
         pass
     finally:
         server.server_close()
+        SEARCH_INDEX.stop()
 
 
 if __name__ == "__main__":
