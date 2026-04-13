@@ -649,6 +649,87 @@
     .section {
       padding: 14px 18px 0;
     }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-header h2 {
+      flex: 1;
+      margin: 0;
+    }
+    .favorites-edit-btn {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .favorites-edit-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .favorites-edit-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+    .favorites-save-btn {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      display: none;
+    }
+    .favorites-cancel-btn {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      display: none;
+    }
+    #favorites.edit-mode .row {
+      cursor: grab;
+      padding-left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #favorites.edit-mode .row:active {
+      cursor: grabbing;
+    }
+    .drag-handle {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .drag-handle-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .row.drag-over {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+    }
+    .row.dragging {
+      opacity: 0.4;
+    }
     .list {
       display: grid;
       gap: 10px;
@@ -1661,7 +1742,7 @@
       margin-bottom: 6px; display: block;
     }
     .modal-body label + label { margin-top: 12px; }
-    .modal-body input, .modal-body textarea {
+    .modal-body input, .modal-body textarea, .modal-body select {
       width: 100%;
       background: var(--input-bg);
       border: 1px solid var(--line);
@@ -1673,7 +1754,7 @@
       outline: none;
       transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
-    .modal-body input:focus, .modal-body textarea:focus { 
+    .modal-body input:focus, .modal-body textarea:focus, .modal-body select:focus { 
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(61, 213, 208, 0.1);
     }
@@ -1690,6 +1771,176 @@
     #mdStatus { margin-top: 8px; font-size: 0.83rem; min-height: 18px; }
     #mdStatus.ok { color: var(--good); }
     #mdStatus.err { color: #b83232; }
+    .prime-modal-box {
+      width: min(760px, 100%);
+      max-height: calc(100dvh - 80px);
+    }
+    .prime-modal-body {
+      gap: 16px;
+      overflow-y: auto;
+      max-height: calc(100dvh - 220px);
+    }
+    .prime-current-card,
+    .prime-entry-card,
+    .prime-list-empty {
+      border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel-2) 78%, transparent), color-mix(in srgb, var(--panel) 92%, transparent));
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 10px 24px color-mix(in srgb, var(--shadow) 26%, transparent);
+    }
+    .prime-current-card {
+      display: grid;
+      gap: 12px;
+    }
+    .prime-current-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .prime-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+    .prime-current-path {
+      font-size: 0.95rem;
+      font-weight: 700;
+      word-break: break-word;
+      margin: 0;
+    }
+    .prime-current-meta {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 6px 0 0;
+    }
+    .prime-form-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+    .prime-toggle-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      flex: 1;
+    }
+    .prime-toggle {
+      display: inline-flex;
+      gap: 9px;
+      align-items: center;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--panel) 82%, transparent);
+      color: var(--ink);
+      font-size: 0.82rem;
+      margin: 0;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .prime-toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+    /* Hide scrollbars but keep functionality */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .prime-form-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .prime-list-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .prime-list-head h3 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .prime-list-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .prime-list {
+      display: grid;
+      gap: 12px;
+    }
+    .prime-entry-card {
+      display: grid;
+      gap: 12px;
+    }
+    .prime-entry-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .prime-entry-title {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+    .prime-entry-meta,
+    .prime-list-empty p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      word-break: break-word;
+    }
+    .prime-entry-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .prime-remove-btn {
+      background: transparent;
+      border-color: #dc2626;
+      color: #dc2626;
+    }
+    .prime-remove-btn:hover {
+      background: #dc2626;
+      color: #fff;
+    }
+    .prime-inline-status {
+      min-height: 18px;
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+    .prime-inline-status.ok {
+      color: var(--good);
+    }
+    .prime-inline-status.err {
+      color: #b83232;
+    }
+    .prime-list-empty h3 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+    }
 
     /* --- File edit mode --- */
     .edit-controls { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
@@ -2047,6 +2298,19 @@
       .modal-body textarea {
         height: 40vh;
       }
+      .prime-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .prime-entry-actions {
+        align-items: stretch;
+      }
+      .prime-entry-actions .prime-toggle-row,
+      .prime-entry-actions button {
+        width: 100%;
+      }
+      .prime-entry-actions button {
+        justify-content: center;
+      }
 
       /* --- Edit mode --- */
       .preview-edit-area {
@@ -2171,6 +2435,102 @@
     body.selection-mode .entry .badge {
       display: none;
     }
+
+    /* --- Filter panel --- */
+    .filter-btn svg { display: block; }
+    .filter-btn.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .filter-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 18px;
+      background: color-mix(in srgb, var(--panel-2) 80%, var(--panel) 20%);
+      border-bottom: 1px solid var(--line);
+    }
+    .filter-panel.is-open { display: flex; }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-input {
+      flex: 1;
+      min-width: 120px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font: inherit;
+      font-size: 13px;
+    }
+    .filter-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .filter-select {
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 8px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .filter-select:focus { outline: none; border-color: var(--accent); }
+    .filter-num {
+      width: 64px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 8px;
+      font: inherit;
+      font-size: 13px;
+    }
+    .filter-num:focus { outline: none; border-color: var(--accent); }
+    .filter-chip {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 20px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: none;
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+    .filter-chip:hover::after { display: none; }
+    .filter-chip.is-active {
+      background: color-mix(in srgb, var(--accent) 15%, var(--panel) 85%);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .filter-chip.is-active:hover { opacity: 0.85; transform: none; }
+    .filter-sep { width: 1px; height: 20px; background: var(--line); flex-shrink: 0; }
+    .filter-clear-btn {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: auto;
+      box-shadow: none;
+    }
+    .filter-clear-btn:hover { border-color: var(--accent); color: var(--accent); background: transparent; transform: none; }
+    .filter-clear-btn:hover::after, .filter-chip:active::after { display: none; }
+    .filter-label { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
 
     /* --- Trash button --- */
     .trash-btn {
@@ -2459,6 +2819,7 @@
         <div class="toolbar">
           <input type="text" id="searchInput" placeholder="🔍 Search files..." style="flex:1;" />
           <button id="openMapBtn" type="button" class="secondary">Map View</button>
+          <button id="primeSettingsBtn" type="button" class="secondary">Prime Settings</button>
           <button id="refreshAllBtn" type="button">Refresh feed</button>
         </div>
       </div>
@@ -2468,10 +2829,17 @@
           <div id="searchResultsList" class="list"></div>
         </div>
         <div id="browseFeed">
+          <div class="section">
+            <div class="section-header">
+              <h2>Favorites</h2>
+              <button type="button" id="favoritesEditBtn" class="favorites-edit-btn">Edit</button>
+              <button type="button" id="favoritesSaveBtn" class="favorites-save-btn">Save</button>
+              <button type="button" id="favoritesCancelBtn" class="favorites-cancel-btn">Cancel</button>
+            </div>
+          </div>
+          <div id="favorites" class="list"></div>
           <div class="section"><h2>Watch Roots</h2></div>
           <div id="roots" class="list"></div>
-          <div class="section"><h2>Favorites</h2></div>
-          <div id="favorites" class="list"></div>
         </div>
       </div>
     </section>
@@ -2487,12 +2855,54 @@
           </label>
           <button type="button" id="newMdBtn">📝 New .md file</button>
           <button type="button" id="selectModeBtn" class="secondary">Select</button>
+          <button type="button" id="filterBtn" class="secondary filter-btn" title="Filter files"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
           <button type="button" id="trashBtn" class="trash-btn">🗑 Trash</button>
           <span id="uploadStatus" style="font-size:13px;color:var(--muted);align-self:center;"></span>
         </div>
       </div>
+      <div class="filter-panel" id="filterPanel">
+        <div class="filter-row">
+          <input type="text" class="filter-input" id="filterName" placeholder="Filter by name…" autocomplete="off" spellcheck="false" />
+          <span class="filter-sep"></span>
+          <span class="filter-label">Type:</span>
+          <button type="button" class="filter-chip is-active" data-filter-type="dir">Dirs</button>
+          <button type="button" class="filter-chip is-active" data-filter-type="image">Images</button>
+          <button type="button" class="filter-chip is-active" data-filter-type="text">Text</button>
+          <button type="button" class="filter-chip is-active" data-filter-type="binary">Binary</button>
+          <button type="button" class="filter-chip is-active" data-filter-type="dot">Dotfiles</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Size:</span>
+          <select class="filter-select" id="filterSizeOp">
+            <option value="any">Any</option>
+            <option value="gt">Larger than</option>
+            <option value="lt">Smaller than</option>
+          </select>
+          <input type="number" class="filter-num" id="filterSizeVal" min="0" placeholder="0" />
+          <select class="filter-select" id="filterSizeUnit">
+            <option value="1024">KB</option>
+            <option value="1048576">MB</option>
+            <option value="1073741824">GB</option>
+          </select>
+          <span class="filter-sep"></span>
+          <span class="filter-label">Modified:</span>
+          <select class="filter-select" id="filterMtime">
+            <option value="0">Any time</option>
+            <option value="1">Today</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+          </select>
+          <span class="filter-sep"></span>
+          <span class="filter-label">Ext:</span>
+          <input type="text" class="filter-input" id="filterExt" placeholder=".png .md .json…" style="flex:0 0 140px;" autocomplete="off" spellcheck="false" />
+          <button type="button" class="filter-clear-btn" id="filterClearBtn">✕ Clear</button>
+        </div>
+      </div>
       <div class="selection-toolbar" id="selectionToolbar">
         <span class="selection-count" id="selectionCount">0 selected</span>
+        <button type="button" class="secondary" id="selectAllBtn">Select all</button>
         <button type="button" class="delete-btn" id="deleteSelectedBtn">Delete</button>
         <button type="button" class="secondary" id="cancelSelectionBtn">Cancel</button>
       </div>
@@ -2505,7 +2915,7 @@
     <section class="panel preview-panel">
       <div class="head">
         <h2>Recent changes and preview</h2>
-        <p class="sub">Newest files first. Click any file to open a preview.</p>
+        <p class="sub">Newest files first, inherited from Prime Directories. Click any file to open a preview.</p>
       </div>
       <div class="panel-body">
         <div id="recentBlock">
@@ -2533,6 +2943,8 @@
         <p class="sub" id="floatingWindowSubtitle">Large preview for the selected file.</p>
       </div>
       <div class="floating-window-actions">
+        <button type="button" class="secondary window-toggle" id="floatingPrevBtn" title="Previous file in directory" disabled>&#8592;</button>
+        <button type="button" class="secondary window-toggle" id="floatingNextBtn" title="Next file in directory" disabled>&#8594;</button>
         <button type="button" class="secondary window-toggle" id="floatingWindowToggleBtn" title="Collapse window">_</button>
         <button type="button" class="secondary window-toggle" id="floatingWindowCloseBtn" title="Close window">×</button>
       </div>
@@ -2632,6 +3044,87 @@
       <div class="modal-foot">
         <button type="button" id="mdSaveBtn">Save File</button>
         <button type="button" class="secondary" id="mdCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="primeSettingsModal" class="modal-overlay" style="display:none">
+    <div class="modal-box prime-modal-box">
+      <div class="modal-head">
+        <h2>Prime Directories</h2>
+        <button type="button" class="modal-close" id="primeSettingsClose">✕</button>
+      </div>
+      <div class="modal-body prime-modal-body">
+        <div class="prime-current-card" style="background: var(--panel-2); border: 1px solid var(--accent); margin-bottom: 24px;">
+          <h3 style="margin: 0 0 8px; font-size: 1rem;">What are Prime Directories?</h3>
+          <p style="font-size: 0.85rem; line-height: 1.5; color: var(--muted);">
+            Prime Directories define the <strong>scope of your workspace</strong>. Files inside these folders power your <strong>Recent Changes</strong> feed, appear in your <strong>Favorites</strong> list (if pinned), and are indexed for <strong>Global Search</strong>. Configure them to focus the browser on your active projects.
+          </p>
+        </div>
+
+        <div class="prime-current-card">
+          <div class="prime-current-top">
+            <div>
+              <p class="prime-kicker">Quick Prime</p>
+              <p class="prime-current-path" id="primeCurrentPath">Open a directory to prime it.</p>
+              <p class="prime-current-meta" id="primeCurrentMeta">Recent Items will inherit from the directories you mark as Prime here.</p>
+            </div>
+            <button type="button" id="primeAddCurrentBtn">Prime Current Directory</button>
+          </div>
+          <div class="prime-form-grid" style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px;">
+            <label for="primeRootSelect">
+              Root
+              <select id="primeRootSelect"></select>
+            </label>
+            <input id="primePathInput" type="hidden" />
+          </div>
+          <div class="prime-form-actions">
+            <div class="prime-toggle-row">
+              <label class="prime-toggle" for="primeIncludeSubdirs">
+                <input id="primeIncludeSubdirs" type="checkbox" checked />
+                <span>Include sub-directories</span>
+              </label>
+              <label class="prime-toggle" for="primePinFavorites">
+                <input id="primePinFavorites" type="checkbox" />
+                <span>Pin to favorites</span>
+              </label>
+            </div>
+            <button type="button" id="primeAddBtn">Add Directory</button>
+          </div>
+          <div id="primeSettingsStatus" class="prime-inline-status"></div>
+        </div>
+
+        <div class="prime-current-card" style="margin-top: 24px;">
+          <h3 style="margin: 0 0 12px; font-size: 0.95rem;">UI Preferences</h3>
+          <div class="prime-toggle-row">
+            <label class="prime-toggle" for="toggleWatchRoots">
+              <input id="toggleWatchRoots" type="checkbox" checked />
+              <span>Show "Watch Roots" panel</span>
+            </label>
+            <label class="prime-toggle" for="toggleFavoritesPanel">
+              <input id="toggleFavoritesPanel" type="checkbox" checked />
+              <span>Show "Favorites" panel</span>
+            </label>
+          </div>
+          
+          <div style="margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px;">
+            <label for="prefFilterExts" style="font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; display: block;">
+              Filtered Extensions (Global Search & Recent Changes)
+            </label>
+            <input id="prefFilterExts" type="text" placeholder="e.g. .db-wal .db-shm .tmp .log" autocomplete="off" spellcheck="false" />
+            <p style="font-size: 0.72rem; color: var(--muted); margin-top: 6px;">Separate with spaces. Files with these extensions will be hidden from summary views.</p>
+          </div>
+        </div>
+
+        <div class="prime-list-head" style="margin-top: 24px;">
+          <h3>Primed Directories</h3>
+          <p id="primeListSummary">No directories primed yet.</p>
+        </div>
+        <div id="primeDirectoryList" class="prime-list"></div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" id="primeSaveBtn">Save Settings</button>
+        <button type="button" class="secondary" id="primeCancelBtn">Cancel</button>
       </div>
     </div>
   </div>
@@ -2748,6 +3241,7 @@
     const state = {
       roots: [],
       favorites: [],
+      primeDirectories: [],
       currentRoot: null,
       currentPath: "",
       mobilePanel: "roots",
@@ -2758,6 +3252,11 @@
 
     const rootsEl = document.getElementById("roots");
     const favoritesEl = document.getElementById("favorites");
+    const favoritesEditBtn = document.getElementById("favoritesEditBtn");
+    const favoritesSaveBtn = document.getElementById("favoritesSaveBtn");
+    const favoritesCancelBtn = document.getElementById("favoritesCancelBtn");
+    let favoritesEditMode = false;
+    let favoritesDragSrc = null;
     const treeEl = document.getElementById("tree");
     const recentEl = document.getElementById("recent");
     const previewEl = document.getElementById("preview");
@@ -2766,10 +3265,33 @@
     const treeStatusEl = document.getElementById("treeStatus");
     const mobileNavEl = document.getElementById("mobileNav");
     const styleThemeSelectEl = document.getElementById("styleThemeSelect");
+    const primeSettingsBtn = document.getElementById("primeSettingsBtn");
+    const primeSettingsModalEl = document.getElementById("primeSettingsModal");
+    const primeSettingsCloseBtn = document.getElementById("primeSettingsClose");
+    const primeCurrentPathEl = document.getElementById("primeCurrentPath");
+    const primeCurrentMetaEl = document.getElementById("primeCurrentMeta");
+    const primeRootSelectEl = document.getElementById("primeRootSelect");
+    const primePathInputEl = document.getElementById("primePathInput");
+    const primeIncludeSubdirsEl = document.getElementById("primeIncludeSubdirs");
+    const primePinFavoritesEl = document.getElementById("primePinFavorites");
+    const primeAddBtn = document.getElementById("primeAddBtn");
+    const primeAddCurrentBtn = document.getElementById("primeAddCurrentBtn");
+    const primeSettingsStatusEl = document.getElementById("primeSettingsStatus");
+    const primeListSummaryEl = document.getElementById("primeListSummary");
+    const primeDirectoryListEl = document.getElementById("primeDirectoryList");
+    const primeSaveBtn = document.getElementById("primeSaveBtn");
+    const primeCancelBtn = document.getElementById("primeCancelBtn");
+    const prefFilterExtsEl = document.getElementById("prefFilterExts");
+    const toggleWatchRootsEl = document.getElementById("toggleWatchRoots");
+    const toggleFavoritesPanelEl = document.getElementById("toggleFavoritesPanel");
+    const watchRootsSectionEl = document.querySelector(".roots-panel .section:nth-of-type(2)");
+    const watchRootsListEl = document.getElementById("roots");
     const floatingImageWindowEl = document.getElementById("floatingImageWindow");
     const floatingWindowHeadEl = document.getElementById("floatingWindowHead");
     const floatingWindowToggleBtn = document.getElementById("floatingWindowToggleBtn");
     const floatingWindowCloseBtn = document.getElementById("floatingWindowCloseBtn");
+    const floatingPrevBtn = document.getElementById("floatingPrevBtn");
+    const floatingNextBtn = document.getElementById("floatingNextBtn");
     const floatingCopyPathBtn = document.getElementById("floatingCopyPathBtn");
     const floatingWindowTitleEl = document.getElementById("floatingWindowTitle");
     const floatingWindowSubtitleEl = document.getElementById("floatingWindowSubtitle");
@@ -2805,6 +3327,9 @@
     const floatingPreviewState = {
       fileKey: "",
       mode: "",
+    };
+    const primeModalState = {
+      draft: [],
     };
     const mapRootId = "root-home";
     const mapState = {
@@ -3003,6 +3528,39 @@
       if (!path) return "";
       const idx = path.lastIndexOf("/");
       return idx === -1 ? "" : path.slice(0, idx);
+    }
+
+    function rootMeta(rootId) {
+      return state.roots.find(root => root.id === rootId) || null;
+    }
+
+    function primeKey(item) {
+      return `${item.root}:${item.path || ""}`;
+    }
+
+    function clonePrimeDirectory(item) {
+      return {
+        root: String(item.root || ""),
+        path: String(item.path || ""),
+        include_subdirectories: !!item.include_subdirectories,
+        pin_to_favorites: !!item.pin_to_favorites,
+      };
+    }
+
+    function primeLabel(item) {
+      const path = String(item.path || "");
+      if (path) {
+        const bits = path.split("/").filter(Boolean);
+        return bits[bits.length - 1] || path;
+      }
+      return rootMeta(item.root)?.label || item.root || "/";
+    }
+
+    function primeAbsolutePath(item) {
+      const root = rootMeta(item.root);
+      if (!root) return item.path || "";
+      if (!item.path) return root.path;
+      return `${root.path.replace(/\/$/, "")}/${item.path}`;
     }
 
     function labelForMapPath(path) {
@@ -3772,14 +4330,205 @@
       mapStageEl.classList.remove("is-dragging");
     }
 
+    function normalizePrimePath(path) {
+      return String(path || "")
+        .trim()
+        .replace(/\\/g, "/")
+        .replace(/^\/+/, "")
+        .replace(/\/+$/, "")
+        .replace(/\/{2,}/g, "/");
+    }
+
+    function setPrimeStatus(message = "", tone = "") {
+      primeSettingsStatusEl.textContent = message;
+      primeSettingsStatusEl.className = `prime-inline-status${tone ? ` ${tone}` : ""}`;
+    }
+
+    function updatePrimeCurrentDirectoryDisplay() {
+      const root = rootMeta(state.currentRoot);
+      if (!root) {
+        primeCurrentPathEl.textContent = "Open a directory to prime it.";
+        primeCurrentMetaEl.textContent = "Recent Items will inherit from the directories you mark as Prime here.";
+        return;
+      }
+      const absolutePath = state.currentPath
+        ? `${root.path.replace(/\/$/, "")}/${state.currentPath}`
+        : root.path;
+      primeCurrentPathEl.textContent = absolutePath;
+      primeCurrentMetaEl.textContent = `${root.label} root • ${state.currentPath || "/"} • Add it as a Prime source or tweak an existing one.`;
+    }
+
+    function populatePrimeRootOptions() {
+      primeRootSelectEl.innerHTML = state.roots.map(root => `
+        <option value="${esc(root.id)}">${esc(root.label)}</option>
+      `).join("");
+    }
+
+    function resetPrimeFormToCurrentDirectory() {
+      const fallbackRoot = state.currentRoot || state.roots[0]?.id || "";
+      if (fallbackRoot) primeRootSelectEl.value = fallbackRoot;
+      primePathInputEl.value = "";
+      primeIncludeSubdirsEl.checked = true;
+      primePinFavoritesEl.checked = false;
+    }
+
+    function upsertPrimeDraft(item) {
+      const clean = {
+        root: String(item.root || ""),
+        path: normalizePrimePath(item.path),
+        include_subdirectories: !!item.include_subdirectories,
+        pin_to_favorites: !!item.pin_to_favorites,
+      };
+      const key = primeKey(clean);
+      const existingIndex = primeModalState.draft.findIndex(entry => primeKey(entry) === key);
+      if (existingIndex >= 0) {
+        primeModalState.draft.splice(existingIndex, 1, clean);
+        return "updated";
+      }
+      primeModalState.draft.push(clean);
+      primeModalState.draft.sort((a, b) => primeKey(a).localeCompare(primeKey(b)));
+      return "added";
+    }
+
+    function renderPrimeDirectoryList() {
+      const items = primeModalState.draft;
+      primeListSummaryEl.textContent = items.length
+        ? `${items.length} primed director${items.length === 1 ? "y" : "ies"}`
+        : "No directories primed yet.";
+
+      if (!items.length) {
+        primeDirectoryListEl.innerHTML = `
+          <div class="prime-list-empty">
+            <h3>Nothing primed yet</h3>
+            <p>Add a directory above to scope Recent Items and optionally pin that directory into Favorites.</p>
+          </div>
+        `;
+        return;
+      }
+
+      primeDirectoryListEl.innerHTML = items.map((item, index) => {
+        const root = rootMeta(item.root);
+        const rootLabel = root?.label || item.root;
+        const relativePath = item.path || "/";
+        return `
+          <div class="prime-entry-card" data-prime-index="${index}">
+            <div class="prime-entry-top">
+              <div>
+                <h3 class="prime-entry-title">${esc(primeLabel(item))}</h3>
+                <p class="prime-entry-meta">${esc(rootLabel)} / ${esc(relativePath)}</p>
+                <p class="prime-entry-meta">${esc(primeAbsolutePath(item))}</p>
+              </div>
+              <span class="badge">Prime</span>
+            </div>
+            <div class="prime-entry-actions">
+              <div class="prime-toggle-row">
+                <label class="prime-toggle">
+                  <input type="checkbox" data-prime-toggle="include" ${item.include_subdirectories ? "checked" : ""} />
+                  <span>Include sub-directories</span>
+                </label>
+                <label class="prime-toggle">
+                  <input type="checkbox" data-prime-toggle="favorite" ${item.pin_to_favorites ? "checked" : ""} />
+                  <span>Pin to favorites</span>
+                </label>
+              </div>
+              <button type="button" class="secondary prime-remove-btn" data-prime-remove="1">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openPrimeSettingsModal() {
+      primeModalState.draft = state.primeDirectories.map(clonePrimeDirectory);
+      populatePrimeRootOptions();
+      updatePrimeCurrentDirectoryDisplay();
+      resetPrimeFormToCurrentDirectory();
+      renderPrimeDirectoryList();
+      
+      // Load UI preference state into modal
+      toggleWatchRootsEl.checked = localStorage.getItem("showWatchRoots") !== "0";
+      toggleFavoritesPanelEl.checked = localStorage.getItem("showFavoritesPanel") !== "0";
+      prefFilterExtsEl.value = localStorage.getItem("prefFilterExts") || ".db-wal .db-shm .tmp";
+
+      setPrimeStatus("");
+      primeSettingsModalEl.style.display = "flex";
+      setTimeout(() => {
+        if (state.currentRoot || state.roots.length) {
+          primePathInputEl.focus();
+          primePathInputEl.select();
+        }
+      }, 40);
+    }
+
+    function applyUiPreferences() {
+      const showWatchRoots = localStorage.getItem("showWatchRoots") !== "0";
+      const showFavoritesPanel = localStorage.getItem("showFavoritesPanel") !== "0";
+      // The headers are in .section divs, the lists are in #roots/#favorites
+      // We need to find the correct "Watch Roots" header div
+      const sections = document.querySelectorAll(".roots-panel .section");
+      sections.forEach(sec => {
+        if (sec.textContent.includes("Watch Roots")) {
+          sec.style.display = showWatchRoots ? "block" : "none";
+        }
+        if (sec.textContent.includes("Favorites")) {
+          sec.style.display = showFavoritesPanel ? "block" : "none";
+        }
+      });
+      rootsEl.style.display = showWatchRoots ? "grid" : "none";
+      favoritesEl.style.display = showFavoritesPanel ? "grid" : "none";
+    }
+
+    function closePrimeSettingsModal() {
+      primeSettingsModalEl.style.display = "none";
+      setPrimeStatus("");
+    }
+
+    async function savePrimeDirectories() {
+      primeSaveBtn.disabled = true;
+      setPrimeStatus("Saving prime directories…");
+      
+      // Save UI preferences to localStorage
+      localStorage.setItem("showWatchRoots", toggleWatchRootsEl.checked ? "1" : "0");
+      localStorage.setItem("showFavoritesPanel", toggleFavoritesPanelEl.checked ? "1" : "0");
+      localStorage.setItem("prefFilterExts", prefFilterExtsEl.value.trim());
+      applyUiPreferences();
+
+      try {
+        const res = await fetch("/api/files/prime-directories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: primeModalState.draft }),
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          setPrimeStatus(`❌ ${data.message || "Failed to save prime directories."}`, "err");
+          primeSaveBtn.disabled = false;
+          return;
+        }
+        state.primeDirectories = data.prime_directories || [];
+        state.favorites = data.favorites || [];
+        renderFavorites();
+        await loadRecent();
+        closePrimeSettingsModal();
+        showToast("Prime directories saved");
+      } catch (error) {
+        setPrimeStatus(`❌ ${error.message}`, "err");
+        primeSaveBtn.disabled = false;
+        return;
+      }
+      primeSaveBtn.disabled = false;
+    }
+
     async function loadRoots() {
       const res = await fetch("/api/files/roots", { cache: "no-store" });
       const data = await res.json();
       state.roots = data.roots || [];
       state.favorites = data.favorites || [];
+      state.primeDirectories = data.prime_directories || [];
       initializeMapRoot();
       renderRoots();
       renderFavorites();
+      updatePrimeCurrentDirectoryDisplay();
       if (!state.currentRoot && state.roots.length) {
         openDir(state.roots[0].id, "");
       }
@@ -3802,51 +4551,189 @@
     }
 
     function renderFavorites() {
-      favoritesEl.innerHTML = state.favorites.map(item => `
-        <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-kind="${esc(item.kind)}">
-          <div class="title"><span>${esc(item.label)}</span><span class="badge">${esc(item.kind)}</span></div>
-          <div class="path clickable-path" title="Click to copy path">${esc(item.root)} / ${esc(item.path)}</div>
-        </div>
-      `).join("");
-      favoritesEl.querySelectorAll(".row").forEach(row => {
-        const pathEl = row.querySelector(".clickable-path");
-        if (pathEl) {
-          pathEl.addEventListener("click", (e) => {
-            e.stopPropagation();
-            copyToClipboard(`${row.dataset.root}/${row.dataset.path}`);
+      favoritesEl.classList.toggle("edit-mode", favoritesEditMode);
+      if (favoritesEditMode) {
+        favoritesEl.innerHTML = state.favorites.map(item => `
+          <div class="row" draggable="true" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-kind="${esc(item.kind)}" data-key="${esc(item.root)}::${esc(item.path)}">
+            <span class="drag-handle">&#8942;&#8942;</span>
+            <div class="drag-handle-content">
+              <div class="title"><span>${esc(item.label)}</span><span class="badge">${esc(item.kind)}</span></div>
+              <div class="path">${esc(item.root)} / ${esc(item.path)}</div>
+            </div>
+          </div>
+        `).join("");
+        favoritesEl.querySelectorAll(".row").forEach(row => {
+          row.addEventListener("dragstart", e => {
+            favoritesDragSrc = row;
+            row.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", row.dataset.key);
           });
-        }
-        row.addEventListener("click", () => {
-          if (row.dataset.kind === "dir") {
-            setMobilePanel("browse");
-            openDir(row.dataset.root, row.dataset.path);
-          } else {
-            setMobilePanel("preview");
-            openFile(row.dataset.root, row.dataset.path);
-          }
+          row.addEventListener("dragend", () => {
+            row.classList.remove("dragging");
+            favoritesEl.querySelectorAll(".row").forEach(r => r.classList.remove("drag-over"));
+          });
+          row.addEventListener("dragover", e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            if (row !== favoritesDragSrc) {
+              favoritesEl.querySelectorAll(".row").forEach(r => r.classList.remove("drag-over"));
+              row.classList.add("drag-over");
+            }
+          });
+          row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+          row.addEventListener("drop", e => {
+            e.preventDefault();
+            row.classList.remove("drag-over");
+            if (!favoritesDragSrc || favoritesDragSrc === row) return;
+            const rows = [...favoritesEl.querySelectorAll(".row")];
+            const srcIdx = rows.indexOf(favoritesDragSrc);
+            const dstIdx = rows.indexOf(row);
+            if (srcIdx < dstIdx) {
+              row.after(favoritesDragSrc);
+            } else {
+              row.before(favoritesDragSrc);
+            }
+          });
         });
+      } else {
+        favoritesEl.innerHTML = state.favorites.map(item => `
+          <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-kind="${esc(item.kind)}">
+            <div class="title"><span>${esc(item.label)}</span><span class="badge">${esc(item.kind)}</span></div>
+            <div class="path clickable-path" title="Click to copy path">${esc(item.root)} / ${esc(item.path)}</div>
+          </div>
+        `).join("");
+        favoritesEl.querySelectorAll(".row").forEach(row => {
+          const pathEl = row.querySelector(".clickable-path");
+          if (pathEl) {
+            pathEl.addEventListener("click", (e) => {
+              e.stopPropagation();
+              copyToClipboard(`${row.dataset.root}/${row.dataset.path}`);
+            });
+          }
+          row.addEventListener("click", () => {
+            if (row.dataset.kind === "dir") {
+              setMobilePanel("browse");
+              openDir(row.dataset.root, row.dataset.path);
+            } else {
+              setMobilePanel("preview");
+              openFile(row.dataset.root, row.dataset.path);
+            }
+          });
+        });
+      }
+    }
+
+    function enterFavoritesEditMode() {
+      favoritesEditMode = true;
+      favoritesEditBtn.style.display = "none";
+      favoritesSaveBtn.style.display = "";
+      favoritesCancelBtn.style.display = "";
+      renderFavorites();
+    }
+
+    function exitFavoritesEditMode() {
+      favoritesEditMode = false;
+      favoritesEditBtn.style.display = "";
+      favoritesSaveBtn.style.display = "none";
+      favoritesCancelBtn.style.display = "none";
+      renderFavorites();
+    }
+
+    async function saveFavoritesOrder() {
+      const rows = [...favoritesEl.querySelectorAll(".row")];
+      const order = rows.map(r => r.dataset.key);
+      try {
+        const res = await fetch("/api/files/favorites/reorder", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          state.favorites = data.favorites || state.favorites;
+          exitFavoritesEditMode();
+          showToast("Favorites order saved");
+        } else {
+          showToast("Save failed: " + (data.message || "unknown error"));
+        }
+      } catch (e) {
+        showToast("Save failed: " + e.message);
+      }
+    }
+
+    favoritesEditBtn.addEventListener("click", enterFavoritesEditMode);
+    favoritesSaveBtn.addEventListener("click", saveFavoritesOrder);
+    favoritesCancelBtn.addEventListener("click", exitFavoritesEditMode);
+
+    // --- Directory filter state ---
+    let rawDirData = null; // last loaded dir: { root, path, entries, parent, absolute_path, truncated }
+
+    const filterState = {
+      name: "",
+      types: new Set(["dir", "image", "text", "binary"]),
+      dotfiles: true,
+      sizeOp: "any",
+      sizeVal: 0,
+      sizeUnit: 1024,
+      mtimeDays: 0,
+      ext: "",
+    };
+
+    function isFilterActive() {
+      return filterState.name.trim() !== ""
+        || filterState.types.size < 4
+        || !filterState.dotfiles
+        || (filterState.sizeOp !== "any" && filterState.sizeVal > 0)
+        || filterState.mtimeDays > 0
+        || filterState.ext.trim() !== "";
+    }
+
+    function getFilteredEntries(entries) {
+      if (!isFilterActive()) return entries;
+      const q = filterState.name.trim().toLowerCase();
+      const now = Date.now();
+      const exts = filterState.ext.trim()
+        ? filterState.ext.trim().toLowerCase().split(/[\s,]+/).filter(Boolean).map(e => e.startsWith(".") ? e : "." + e)
+        : [];
+      return entries.filter(e => {
+        if (q && !e.name.toLowerCase().includes(q)) return false;
+        if (!filterState.dotfiles && e.name.startsWith(".")) return false;
+        const kind = e.is_dir ? "dir" : e.kind;
+        if (!filterState.types.has(kind)) return false;
+        if (!e.is_dir && filterState.sizeOp !== "any" && filterState.sizeVal > 0) {
+          const threshold = filterState.sizeVal * filterState.sizeUnit;
+          if (filterState.sizeOp === "lt" && e.size >= threshold) return false;
+          if (filterState.sizeOp === "gt" && e.size <= threshold) return false;
+        }
+        if (filterState.mtimeDays > 0) {
+          const cutoff = now - filterState.mtimeDays * 86400 * 1000;
+          const mt = new Date(e.mtime).getTime();
+          if (isNaN(mt) || mt < cutoff) return false;
+        }
+        if (exts.length > 0) {
+          const dotIdx = e.name.lastIndexOf(".");
+          const fileExt = dotIdx >= 0 ? e.name.slice(dotIdx).toLowerCase() : "";
+          if (!e.is_dir && !exts.includes(fileExt)) return false;
+        }
+        return true;
       });
     }
 
-    async function openDir(root, path) {
-      const params = new URLSearchParams({ root, path });
-      const res = await fetch(`/api/files/list?${params}`, { cache: "no-store" });
-      const data = await res.json();
-      if (!data.ok) {
-        treeEl.innerHTML = `<div class="empty">${esc(data.message || "Failed to load directory.")}</div>`;
-        return;
-      }
-      state.currentRoot = root;
-      state.currentPath = path;
-      renderRoots();
-      renderCrumbs(root, path);
-      treeTitleEl.textContent = data.absolute_path;
-      treeStatusEl.textContent = `${data.entries.length}${data.truncated ? "+" : ""} items`;
+    function renderTreeEntries() {
+      if (!rawDirData) return;
+      const { root, path, entries, parent, truncated } = rawDirData;
+      const filtered = getFilteredEntries(entries);
+      const active = isFilterActive();
+      treeStatusEl.textContent = active
+        ? `${filtered.length} of ${entries.length}${truncated ? "+" : ""} items (filtered)`
+        : `${entries.length}${truncated ? "+" : ""} items`;
+      filterBtnEl.classList.toggle("is-active", active);
 
       const items = [];
-      if (data.parent !== null && path) {
+      if (parent !== null && path) {
         items.push(`
-          <div class="entry" data-root="${esc(root)}" data-path="${esc(data.parent)}" data-kind="dir" data-is-parent="true">
+          <div class="entry" data-root="${esc(root)}" data-path="${esc(parent)}" data-kind="dir" data-is-parent="true">
             <div class="select-check"></div>
             <div>
               <div class="name folder">..</div>
@@ -3855,7 +4742,7 @@
           </div>
         `);
       }
-      items.push(...data.entries.map(entry => {
+      items.push(...filtered.map(entry => {
         const key = `${root}:${entry.path}`;
         const isSelected = selectionState.selected.has(key);
         return `
@@ -3869,20 +4756,17 @@
           </div>
         `;
       }));
-      treeEl.innerHTML = items.join("") || `<div class="empty">Directory is empty.</div>`;
+      treeEl.innerHTML = items.join("") || `<div class="empty">${active ? "No files match the current filter." : "Directory is empty."}</div>`;
+      dirFileList = filtered.filter(e => !e.is_dir).map(e => ({ root, path: e.path }));
+      updateNavButtons();
       treeEl.querySelectorAll(".entry").forEach(entry => {
         entry.addEventListener("click", (e) => {
           if (selectionState.active) {
-            // In selection mode, clicking toggles selection (except ".." parent)
             if (entry.dataset.isParent === "true") {
               openDir(entry.dataset.root, entry.dataset.path);
               return;
             }
-            const entryRoot = entry.dataset.root;
-            const entryPath = entry.dataset.path;
-            const entryName = entry.dataset.name || "";
-            const isDir = entry.dataset.kind === "dir";
-            toggleSelection(entryRoot, entryPath, entryName, isDir);
+            toggleSelection(entry.dataset.root, entry.dataset.path, entry.dataset.name || "", entry.dataset.kind === "dir");
             rerenderTreeSelectionState();
             return;
           }
@@ -3894,8 +4778,6 @@
             openFile(entry.dataset.root, entry.dataset.path);
           }
         });
-
-        // Long-press for selection mode on mobile
         entry.addEventListener("pointerdown", (e) => {
           if (entry.dataset.isParent === "true") return;
           handleEntryPointerDown(e, entry);
@@ -3904,6 +4786,24 @@
         entry.addEventListener("pointerleave", handleEntryPointerLeave);
         entry.addEventListener("pointercancel", handleEntryPointerLeave);
       });
+    }
+
+    async function openDir(root, path) {
+      const params = new URLSearchParams({ root, path });
+      const res = await fetch(`/api/files/list?${params}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!data.ok) {
+        treeEl.innerHTML = `<div class="empty">${esc(data.message || "Failed to load directory.")}</div>`;
+        return;
+      }
+      state.currentRoot = root;
+      state.currentPath = path;
+      updatePrimeCurrentDirectoryDisplay();
+      rawDirData = { ...data, root, path };
+      renderRoots();
+      renderCrumbs(root, path);
+      treeTitleEl.textContent = data.absolute_path;
+      renderTreeEntries();
     }
 
     function renderCrumbs(root, path) {
@@ -3951,6 +4851,7 @@
       floatingImageMetaEl.textContent = contentMeta;
       floatingCopyPathBtn.disabled = !cf.path;
       floatingCopyPathBtn.textContent = "Copy path";
+      updateNavButtons();
 
       if (cf.kind === "image" && cf.rawUrl) {
         floatingImageStageEl.classList.remove("is-document");
@@ -4044,6 +4945,14 @@
 
     // Current file state for edit mode
     const cf = { root: null, path: null, absolutePath: null, name: null, content: null, truncated: false, kind: null, rawUrl: null };
+    // Files in the current directory for prev/next navigation
+    let dirFileList = [];
+
+    function updateNavButtons() {
+      const idx = cf.path ? dirFileList.findIndex(f => f.root === cf.root && f.path === cf.path) : -1;
+      floatingPrevBtn.disabled = idx <= 0;
+      floatingNextBtn.disabled = idx < 0 || idx >= dirFileList.length - 1;
+    }
 
     function renderPreviewView() {
       let body = "";
@@ -4177,21 +5086,37 @@
       cf.mtime = data.mtime;
       cf.rawUrl = data.raw_url || null;
       renderPreviewView();
+      updateNavButtons();
       setMobilePanel("preview");
       openDir(root, path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
     }
 
     async function loadRecent() {
+      const filterExts = (localStorage.getItem("prefFilterExts") || ".db-wal .db-shm .tmp")
+        .toLowerCase().split(/\s+/).filter(Boolean);
+
       const res = await fetch("/api/files/recent?limit=30", { cache: "no-store" });
       const data = await res.json();
-      const items = data.items || [];
+      let items = data.items || [];
+      
+      // Filter out files with restricted extensions
+      if (filterExts.length > 0) {
+        items = items.filter(item => {
+          const name = item.path.split("/").pop().toLowerCase();
+          return !filterExts.some(ext => name.endsWith(ext));
+        });
+      }
+
+      const emptyMessage = state.primeDirectories.length
+        ? "No recent files found inside your Prime Directories."
+        : "No Prime Directories yet. Open Prime Settings and mark a directory as Prime.";
       recentEl.innerHTML = items.map(item => `
         <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-abs="${esc(item.absolute_path)}">
           <div class="title"><span>${esc(item.path.split("/").pop())}</span><span class="badge">${esc(item.label)}</span></div>
           <div class="path clickable-path" title="Click to copy path">${esc(item.absolute_path)}</div>
           <div class="path">${esc(item.mtime)} • ${fmtBytes(item.size)}</div>
         </div>
-      `).join("") || `<div class="empty">No recent files found.</div>`;
+      `).join("") || `<div class="empty">${esc(emptyMessage)}</div>`;
       recentEl.querySelectorAll(".row").forEach(row => {
         const pathEl = row.querySelector(".clickable-path");
         if (pathEl) {
@@ -4208,7 +5133,27 @@
     }
 
     async function refreshAll() {
-      await Promise.all([loadRoots(), loadRecent()]);
+      await loadRoots();
+      await loadRecent();
+    }
+
+    function buildSearchParams(query) {
+      const params = new URLSearchParams({ q: query });
+      if (filterState.name.trim()) params.set("name", filterState.name.trim());
+      if (filterState.types.size === 0) {
+        params.set("kind", "__none__");
+      } else if (filterState.types.size < 4) {
+        params.set("kind", Array.from(filterState.types).join(","));
+      }
+      params.set("dotfiles", filterState.dotfiles ? "1" : "0");
+      if (filterState.sizeOp !== "any" && filterState.sizeVal > 0) {
+        params.set("size_op", filterState.sizeOp);
+        params.set("size_val", String(filterState.sizeVal));
+        params.set("size_unit", String(filterState.sizeUnit));
+      }
+      if (filterState.mtimeDays > 0) params.set("mtime_days", String(filterState.mtimeDays));
+      if (filterState.ext.trim()) params.set("ext", filterState.ext.trim());
+      return params;
     }
 
     async function performSearch(query) {
@@ -4216,7 +5161,11 @@
         clearSearch();
         return;
       }
-      const params = new URLSearchParams({ q: query });
+      
+      const filterExts = (localStorage.getItem("prefFilterExts") || ".db-wal .db-shm .tmp")
+        .toLowerCase().split(/\s+/).filter(Boolean);
+
+      const params = buildSearchParams(query);
       const res = await fetch(`/api/files/search?${params}`, { cache: "no-store" });
       const data = await res.json();
       
@@ -4225,9 +5174,26 @@
       const browseFeed = document.getElementById("browseFeed");
       
       if (data.ok && data.results.length) {
+        let results = data.results;
+        
+        // Filter out files with restricted extensions
+        if (filterExts.length > 0) {
+          results = results.filter(item => {
+            const name = item.name.toLowerCase();
+            return !filterExts.some(ext => name.endsWith(ext));
+          });
+        }
+
+        if (results.length === 0) {
+          browseFeed.style.display = "none";
+          searchResultsEl.style.display = "block";
+          searchResultsList.innerHTML = `<div class="empty">No results found (some files may be hidden by your Extension Filter).</div>`;
+          return;
+        }
+
         browseFeed.style.display = "none";
         searchResultsEl.style.display = "block";
-        searchResultsList.innerHTML = data.results.map(item => `
+        searchResultsList.innerHTML = results.map(item => `
           <div class="row" data-root="${esc(item.root)}" data-path="${esc(item.path)}" data-abs="${esc(item.absolute_path || item.path)}">
             <div class="title"><span>${esc(item.name)}</span><span class="badge">${esc(item.root)}</span></div>
             <div class="path clickable-path" title="Click to copy path">${esc(item.path)}</div>
@@ -4376,6 +5342,14 @@
     floatingWindowToggleBtn.addEventListener("click", () => setFloatingWindowMinimized(!floatingWindowState.minimized));
     floatingWindowCloseBtn.addEventListener("click", closeFloatingImageWindow);
     floatingCopyPathBtn.addEventListener("click", copyFloatingPreviewPath);
+    floatingPrevBtn.addEventListener("click", () => {
+      const idx = dirFileList.findIndex(f => f.root === cf.root && f.path === cf.path);
+      if (idx > 0) openFile(dirFileList[idx - 1].root, dirFileList[idx - 1].path);
+    });
+    floatingNextBtn.addEventListener("click", () => {
+      const idx = dirFileList.findIndex(f => f.root === cf.root && f.path === cf.path);
+      if (idx >= 0 && idx < dirFileList.length - 1) openFile(dirFileList[idx + 1].root, dirFileList[idx + 1].path);
+    });
     window.addEventListener("resize", () => {
       if (mapState.open) {
         fitMapToStage();
@@ -4583,6 +5557,85 @@
       mdSaveBtn.disabled = false;
     });
 
+    function addPrimeDirectoryFromForm() {
+      const root = primeRootSelectEl.value.trim();
+      if (!root) {
+        setPrimeStatus("Choose a root before priming a directory.", "err");
+        return;
+      }
+      const item = {
+        root,
+        path: primePathInputEl.value,
+        include_subdirectories: primeIncludeSubdirsEl.checked,
+        pin_to_favorites: primePinFavoritesEl.checked,
+      };
+      const action = upsertPrimeDraft(item);
+      renderPrimeDirectoryList();
+      setPrimeStatus(
+        action === "updated" ? "Updated existing Prime Directory in the draft list." : "Added directory to the draft prime list.",
+        "ok",
+      );
+    }
+
+    primeSettingsBtn.addEventListener("click", openPrimeSettingsModal);
+    primeSettingsCloseBtn.addEventListener("click", closePrimeSettingsModal);
+    primeCancelBtn.addEventListener("click", closePrimeSettingsModal);
+    primeAddCurrentBtn.addEventListener("click", () => {
+      const root = state.currentRoot;
+      if (!root) {
+        setPrimeStatus("Open a directory before priming it.", "err");
+        return;
+      }
+      const item = {
+        root,
+        path: state.currentPath || "",
+        include_subdirectories: primeIncludeSubdirsEl.checked,
+        pin_to_favorites: primePinFavoritesEl.checked,
+      };
+      const action = upsertPrimeDraft(item);
+      renderPrimeDirectoryList();
+      setPrimeStatus(
+        action === "updated" ? "Updated existing Prime Directory in the draft list." : "Added current directory to the draft prime list.",
+        "ok",
+      );
+    });
+    primeAddBtn.addEventListener("click", addPrimeDirectoryFromForm);
+    primeSaveBtn.addEventListener("click", savePrimeDirectories);
+    primePathInputEl.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addPrimeDirectoryFromForm();
+      }
+    });
+    primeSettingsModalEl.addEventListener("click", event => {
+      if (event.target === primeSettingsModalEl) closePrimeSettingsModal();
+    });
+    primeDirectoryListEl.addEventListener("change", event => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement)) return;
+      const card = input.closest("[data-prime-index]");
+      if (!card) return;
+      const index = Number(card.getAttribute("data-prime-index"));
+      if (!Number.isInteger(index) || !primeModalState.draft[index]) return;
+      if (input.dataset.primeToggle === "include") {
+        primeModalState.draft[index].include_subdirectories = input.checked;
+      } else if (input.dataset.primeToggle === "favorite") {
+        primeModalState.draft[index].pin_to_favorites = input.checked;
+      }
+      setPrimeStatus("Updated draft prime settings.", "ok");
+    });
+    primeDirectoryListEl.addEventListener("click", event => {
+      const button = event.target.closest("[data-prime-remove]");
+      if (!button) return;
+      const card = button.closest("[data-prime-index]");
+      if (!card) return;
+      const index = Number(card.getAttribute("data-prime-index"));
+      if (!Number.isInteger(index)) return;
+      primeModalState.draft.splice(index, 1);
+      renderPrimeDirectoryList();
+      setPrimeStatus("Removed directory from the draft prime list.", "ok");
+    });
+
     // --- Selection mode & deletion ---
     const selectionState = {
       active: false,
@@ -4593,7 +5646,17 @@
     const selectionCountEl = document.getElementById("selectionCount");
     const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
     const cancelSelectionBtn = document.getElementById("cancelSelectionBtn");
+    const selectAllBtn = document.getElementById("selectAllBtn");
     const selectModeBtn = document.getElementById("selectModeBtn");
+    const filterBtnEl = document.getElementById("filterBtn");
+    const filterPanelEl = document.getElementById("filterPanel");
+    const filterNameEl = document.getElementById("filterName");
+    const filterExtEl = document.getElementById("filterExt");
+    const filterSizeOpEl = document.getElementById("filterSizeOp");
+    const filterSizeValEl = document.getElementById("filterSizeVal");
+    const filterSizeUnitEl = document.getElementById("filterSizeUnit");
+    const filterMtimeEl = document.getElementById("filterMtime");
+    const filterClearBtnEl = document.getElementById("filterClearBtn");
     const trashBtnEl = document.getElementById("trashBtn");
     const trashModalEl = document.getElementById("trashModal");
     const trashListEl = document.getElementById("trashList");
@@ -4676,6 +5739,8 @@
       const count = selectionState.selected.size;
       selectionCountEl.textContent = `${count} selected`;
       deleteSelectedBtn.disabled = count === 0;
+      const totalEntries = treeEl.querySelectorAll(".entry:not([data-is-parent])").length;
+      selectAllBtn.textContent = count > 0 && count === totalEntries ? "Deselect all" : "Select all";
     }
 
     function rerenderTreeSelectionState() {
@@ -4700,6 +5765,82 @@
     });
 
     cancelSelectionBtn.addEventListener("click", exitSelectionMode);
+
+    // --- Filter panel wiring ---
+    function applyFilter() {
+      const activeSearch = document.getElementById("searchInput")?.value?.trim() || "";
+      if (activeSearch) {
+        performSearch(activeSearch);
+        return;
+      }
+      renderTreeEntries();
+    }
+
+    filterBtnEl.addEventListener("click", () => {
+      filterPanelEl.classList.toggle("is-open");
+      if (filterPanelEl.classList.contains("is-open")) filterNameEl.focus();
+    });
+
+    filterNameEl.addEventListener("input", () => { filterState.name = filterNameEl.value; applyFilter(); });
+    filterExtEl.addEventListener("input", () => { filterState.ext = filterExtEl.value; applyFilter(); });
+    filterSizeOpEl.addEventListener("change", () => { filterState.sizeOp = filterSizeOpEl.value; applyFilter(); });
+    filterSizeValEl.addEventListener("input", () => { filterState.sizeVal = parseFloat(filterSizeValEl.value) || 0; applyFilter(); });
+    filterSizeUnitEl.addEventListener("change", () => { filterState.sizeUnit = parseInt(filterSizeUnitEl.value, 10); applyFilter(); });
+    filterMtimeEl.addEventListener("change", () => { filterState.mtimeDays = parseInt(filterMtimeEl.value, 10); applyFilter(); });
+
+    filterPanelEl.querySelectorAll(".filter-chip[data-filter-type]").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const t = chip.dataset.filterType;
+        if (t === "dot") {
+          filterState.dotfiles = !filterState.dotfiles;
+          chip.classList.toggle("is-active", filterState.dotfiles);
+        } else {
+          if (filterState.types.has(t)) {
+            filterState.types.delete(t);
+            chip.classList.remove("is-active");
+          } else {
+            filterState.types.add(t);
+            chip.classList.add("is-active");
+          }
+        }
+        applyFilter();
+      });
+    });
+
+    filterClearBtnEl.addEventListener("click", () => {
+      filterState.name = ""; filterNameEl.value = "";
+      filterState.ext = ""; filterExtEl.value = "";
+      filterState.sizeOp = "any"; filterSizeOpEl.value = "any";
+      filterState.sizeVal = 0; filterSizeValEl.value = "";
+      filterState.sizeUnit = 1024; filterSizeUnitEl.value = "1024";
+      filterState.mtimeDays = 0; filterMtimeEl.value = "0";
+      filterState.dotfiles = true;
+      filterState.types = new Set(["dir", "image", "text", "binary"]);
+      filterPanelEl.querySelectorAll(".filter-chip[data-filter-type]").forEach(c => c.classList.add("is-active"));
+      applyFilter();
+    });
+
+    selectAllBtn.addEventListener("click", () => {
+      const allSelected = (() => {
+        const entries = treeEl.querySelectorAll(".entry:not([data-is-parent])");
+        return entries.length > 0 && Array.from(entries).every(e => selectionState.selected.has(`${e.dataset.root}:${e.dataset.path}`));
+      })();
+      if (allSelected) {
+        selectionState.selected.clear();
+      } else {
+        treeEl.querySelectorAll(".entry:not([data-is-parent])").forEach(entry => {
+          const key = `${entry.dataset.root}:${entry.dataset.path}`;
+          selectionState.selected.set(key, {
+            root: entry.dataset.root,
+            path: entry.dataset.path,
+            name: entry.dataset.name || entry.dataset.path.split("/").pop(),
+            is_dir: entry.dataset.kind === "dir",
+          });
+        });
+      }
+      updateSelectionCount();
+      rerenderTreeSelectionState();
+    });
 
     deleteSelectedBtn.addEventListener("click", async () => {
       const count = selectionState.selected.size;
@@ -4922,6 +6063,8 @@
       if (event.key === "Escape") {
         if (confirmOverlayEl.style.display !== "none" && confirmOverlayEl.style.display) {
           hideConfirm();
+        } else if (primeSettingsModalEl.style.display !== "none" && primeSettingsModalEl.style.display) {
+          closePrimeSettingsModal();
         } else if (trashModalEl.style.display !== "none" && trashModalEl.style.display) {
           closeTrashModal();
         }
@@ -4929,8 +6072,9 @@
     });
 
     initializeFloatingWindow();
+    applyUiPreferences();
     refreshAll();
-    setInterval(loadRecent, 20000);
+    setInterval(loadRecent, 120000);
   </script>
 </body>
 </html>
